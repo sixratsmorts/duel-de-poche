@@ -295,6 +295,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .dflash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:7}
 .dflash.go{animation:dfl .45s}
 @keyframes dfl{0%{opacity:.9}100%{opacity:0}}
+.dstreak{flex:none;text-align:center;font-family:var(--font-d);font-size:8px;color:var(--gold);margin:-2px 0 2px}
 .dcoins{position:absolute;left:0;font-family:var(--font-d);font-size:9px;color:var(--gold)}
 #dbet{flex:none;background:var(--surface);border:2px solid var(--gold);border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:7px;text-align:center;z-index:4}
 #dbet .bt{font-family:var(--font-d);font-size:9px;color:var(--gold);line-height:1.5}
@@ -349,6 +350,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 
   <section id="duo" class="screen" hidden>
     <div class="duohead"><span class="dcoins" id="dcoins"></span><b>1 CONTRE 1</b><button class="quit" id="dQuit">Menu</button></div>
+    <div class="dstreak" id="dstreak"></div>
     <div class="dinfo" id="dinfo1"></div>
     <div class="dwin cpu" id="dwin1" data-tag="POKÉMON 1"></div>
     <div class="dvs">VS</div>
@@ -1274,7 +1276,7 @@ function endGame(){
 
 /* ---------- Pièces et paris du 1 contre 1 ---------- */
 var DUOK='duel-de-poche-duo-v1', STAKES=[1,10,100,1000,10000];
-var WALLET=Object.assign({coins:100,refill:0,stake:1},lsGet(DUOK,{}));
+var WALLET=Object.assign({coins:100,refill:0,stake:1,streak:0,best:0},lsGet(DUOK,{}));
 function walletSave(){try{localStorage.setItem(DUOK,JSON.stringify(WALLET));}catch(e){}}
 /* à 0 pièce : compte à rebours d'1 minute, puis +10 pièces (le chronomètre est mémorisé, il continue même si on quitte) */
 function walletTick(){
@@ -1287,7 +1289,7 @@ function walletTick(){
 }
 function mmss(ms){var t=Math.max(0,Math.ceil(ms/1000));return Math.floor(t/60)+':'+('0'+(t%60)).slice(-2);}
 function nf(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ');}
-function renderCoins(){var e=$('#dcoins'); if(e) e.textContent='● '+nf(WALLET.coins);}
+function renderCoins(){var e=$('#dcoins'); if(e) e.textContent='● '+nf(WALLET.coins); var t=$('#dstreak'); if(t) t.textContent='Série : '+(WALLET.streak||0)+'  ·  Meilleure Série : '+(WALLET.best||0);}
 /* ---------- Mode 1 contre 1 ---------- */
 var DUO_SHINY=1/18, DU=null;
 function dwait(ms){return new Promise(function(res){setTimeout(res,ms);});}
@@ -1474,10 +1476,11 @@ function finishDuo(w,bet){
   var betLine='';
   DU.settled=true;
   if(bet){
-    if(bet.side===w){WALLET.coins+=2*bet.stake; betLine='<div class="sub" style="color:var(--good)">Pari gagné sur '+esc(M[w].name)+' : tu récupères '+nf(2*bet.stake)+' pièces (+'+nf(bet.stake)+')</div>';}
-    else betLine='<div class="sub" style="color:var(--bad)">Pari perdu : −'+nf(bet.stake)+' pièce'+(bet.stake>1?'s':'')+'</div>';
+    if(bet.side===w){WALLET.streak=(WALLET.streak||0)+1; if(WALLET.streak>(WALLET.best||0)) WALLET.best=WALLET.streak; WALLET.coins+=2*bet.stake; betLine='<div class="sub" style="color:var(--good)">Pari gagné sur '+esc(M[w].name)+' : tu récupères '+nf(2*bet.stake)+' pièces (+'+nf(bet.stake)+')</div>';}
+    else{WALLET.streak=0; betLine='<div class="sub" style="color:var(--bad)">Pari perdu : −'+nf(bet.stake)+' pièce'+(bet.stake>1?'s':'')+'</div>';}
   }
-  walletTick();
+  walletTick(); walletSave();
+  if(bet) betLine+='<div class="sub" style="color:var(--gold)">Série : '+(WALLET.streak||0)+' · Meilleure Série : '+(WALLET.best||0)+'</div>';
   betLine+='<div class="sub">Pièces : '+nf(WALLET.coins)+(WALLET.coins<=0?' · +10 dans 1:00':'')+'</div>';
   renderCoins();
   var msg=bet?(bet.side===w?'VICTOIRE !':'DÉFAITE'):esc(M[w].name)+' GAGNE !', col=bet?(bet.side===w?'var(--good)':'var(--bad)'):'var(--p1)';
@@ -1577,7 +1580,7 @@ $('#bDuo').onclick=function(){VS=false;startDuo();};
 $('#dQuit').onclick=function(){
   var b=$('#dQuit');
   if(DU&&DU.bet&&!DU.settled&&!DU.quitArm){DU.quitArm=true;b.textContent='Perdre la mise ?';setTimeout(function(){if(DU)DU.quitArm=false;b.textContent='Menu';},2200);return;}
-  if(DU){DU.token={};clearInterval(DU.betTimer);}
+  if(DU){DU.token={};clearInterval(DU.betTimer); if(DU.bet&&!DU.settled){WALLET.streak=0;walletSave();}}
   b.textContent='Menu'; $('#dbet').hidden=true; show('menu');
 };
 $('#bDex').onclick=function(){DEXSH=false;show('dex');};
