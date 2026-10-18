@@ -31,7 +31,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-b);fo
 img{image-rendering:crisp-edges;image-rendering:pixelated}
 button{font:inherit;color:inherit;cursor:pointer}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-#app{position:relative;height:100%}
+#app{position:fixed;top:0;left:0;right:0;bottom:0}
 .screen{position:absolute;inset:0;display:flex;flex-direction:column;min-width:0}
 
 .btn{font-family:var(--font-d);font-size:10px;letter-spacing:.03em;line-height:1.4;padding:11px 14px;background:var(--ink);color:#1c1530;border:0;border-radius:4px;box-shadow:0 4px 0 #8d84b8}
@@ -113,6 +113,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 #dex{gap:8px}
 .dhead{display:flex;align-items:center;gap:10px;padding-top:10px;flex-wrap:wrap}
 .dhead h2{margin:0;font-family:var(--font-d);font-size:13px;color:var(--gold)}
+.dhead .btn{padding:8px 10px}
+.dhead .btn.on{background:var(--gold);color:#1c1530;box-shadow:0 4px 0 #a8801a}
+.dempty{grid-column:1/-1;text-align:center;color:var(--mute);padding:28px 12px;font-size:14px}
 .dcount{margin-left:auto;font-size:13px;color:var(--mute)}
 .dbar{height:8px;background:#0d0a1c;border:1px solid var(--line);border-radius:2px;overflow:hidden}
 .dbar i{display:block;height:100%;background:var(--gold)}
@@ -225,7 +228,8 @@ button{font:inherit;color:inherit;cursor:pointer}
   <section id="dex" class="screen" hidden>
     <div class="dhead">
       <button class="btn alt" id="bBack">Retour</button>
-      <h2>POKÉDEX</h2>
+      <h2 id="dtitle">POKÉDEX</h2>
+      <button class="btn alt" id="bShiny" aria-pressed="false">✦ Shiny</button>
       <span class="dcount" id="dcount"></span>
     </div>
     <div class="dbar"><i id="dbar"></i></div>
@@ -463,6 +467,7 @@ function initN(){
 initN();
 
 /* ---------- Pokédex (stockage local, par appareil) ---------- */
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}
 var KEY='duel-de-poche-dex-v1';
 var DEX={seen:{},shiny:{},games:0,wins:[0,0],ties:0};
 try{var sv=localStorage.getItem(KEY); if(sv) DEX=Object.assign(DEX,JSON.parse(sv));}catch(e){}
@@ -808,8 +813,25 @@ function endGame(){
 }
 
 /* ---------- Pokédex ---------- */
+var DEXSH=false;
 function renderDex(){
   var seen=count(DEX.seen), sh=count(DEX.shiny), h='', id;
+  var b=$('#bShiny'); b.classList.toggle('on',DEXSH); b.setAttribute('aria-pressed',DEXSH?'true':'false');
+  $('#dtitle').textContent=DEXSH?'SHINYDEX':'POKÉDEX';
+  if(DEXSH){
+    $('#dcount').textContent='✦ '+sh+'/'+N;
+    $('#dbar').style.width=Math.round(sh/N*100)+'%';
+    var ids=Object.keys(DEX.shiny).map(Number).sort(function(a,c){return a-c;});
+    if(!ids.length) h='<div class="dempty">Aucun chromatique pour l\'instant.<br>Ils apparaissent ici dès qu\'un tirage en donne un (1 chance sur 40).</div>';
+    ids.forEach(function(id){
+      h+='<button class="dcell" data-id="'+id+'"><span class="star">✦</span>'+
+        '<img alt="" loading="lazy" src="'+spriteURL(id,true)+'" onerror="__fb(this,'+id+',true)">'+
+        '<span class="no">#'+('000'+id).slice(-4)+'</span><span class="nm">'+esc(NAMEC[id]||('#'+id))+'</span></button>';
+    });
+    $('#dexgrid').innerHTML=h;
+    fillDexNames();
+    return;
+  }
   $('#dcount').textContent=seen+'/'+N+' · ✦ '+sh;
   $('#dbar').style.width=Math.round(seen/N*100)+'%';
   for(id=1;id<=N;id++){
@@ -866,8 +888,9 @@ function dexDetail(id){
 
 /* ---------- Événements ---------- */
 $('#bPlay').onclick=startGame;
-$('#bDex').onclick=function(){show('dex');};
+$('#bDex').onclick=function(){DEXSH=false;show('dex');};
 $('#bBack').onclick=function(){show('menu');};
+$('#bShiny').onclick=function(){DEXSH=!DEXSH;renderDex();$('#dexscroll').scrollTop=0;};
 $('#bSnd').onclick=function(){SOUND=SOUND?0:1;lsSet('duel-de-poche-sound',SOUND);unlockAudio();renderMenu();if(SOUND)beep(660,0.1,'square',0.05);};
 $('#z0').addEventListener('click',onZone);
 $('#z1').addEventListener('click',onZone);
