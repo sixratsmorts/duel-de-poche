@@ -233,6 +233,46 @@ button{font:inherit;color:inherit;cursor:pointer}
   .lunge,.hit,.pop,.thud,.jp,.jpbox,.jpbox b,.conf i,.card.landed.shiny,#bpop,.bplabel,.medal.big{animation:none}
   .hpfill{transition:none}
 }
+
+/* ---------- Mode 1 contre 1 ---------- */
+#duo{gap:6px}
+.duohead{flex:none;position:relative;display:flex;align-items:center;justify-content:center;height:28px}
+.duohead b{font-family:var(--font-d);font-size:12px;color:var(--gold)}
+.duohead .quit{right:0}
+.dinfo{flex:none;height:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;transition:opacity .5s}
+.dinfo .fname{font-family:var(--font-d);font-size:12px;color:var(--ink);line-height:1.4}
+.dinfo .fname.dim{color:var(--mute)}
+.dinfo .stl{font-size:12px;color:var(--mute)}
+.dinfo .row{display:flex;gap:4px;align-items:center;justify-content:center;flex-wrap:wrap}
+.dwin{flex:1 1 0;min-height:0;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 60%,#32286a,#1a1436);border:3px solid var(--line);border-radius:8px;transition:border-color .5s,background .5s}
+.dwin::before{content:attr(data-tag);position:absolute;left:8px;top:6px;z-index:3;font-family:var(--font-d);font-size:8px;color:var(--mute);transition:opacity .4s}
+.dwin.cpu{border-color:var(--p2)} .dwin.me{border-color:var(--p1)}
+.dvs{flex:none;text-align:center;font-family:var(--font-d);font-size:11px;color:var(--gold);height:14px;line-height:14px;margin:-3px 0;transition:opacity .4s}
+.dstrip{position:absolute;left:0;right:0;top:0;display:flex;flex-direction:column;will-change:transform;filter:blur(.8px) saturate(1.3)}
+.dc{flex:none;display:flex;justify-content:center}
+.dc img{height:100%;width:auto;max-width:100%;object-fit:contain}
+.dsp{position:absolute;inset:0;display:flex;justify-content:center;animation:dpop .45s cubic-bezier(.2,1.5,.4,1)}
+.dsp img{height:100%;width:auto;max-width:100%;object-fit:contain;object-position:center;transition:object-position .4s}
+@keyframes dpop{from{transform:scale(.5);opacity:0}to{transform:none;opacity:1}}
+.fight .dinfo,.fight .dvs,.fight .dwin::before{opacity:0}
+.fight .dwin{border-color:transparent;background:transparent;overflow:visible}
+.fight .dwin.cpu .dsp img{object-position:center bottom}
+.fight .dwin.me .dsp img{object-position:center top}
+.dsp.lgd{animation:lgd .46s ease-in-out;z-index:2}
+@keyframes lgd{0%{transform:none}45%{transform:translateY(30%) scale(1.1)}100%{transform:none}}
+.dsp.lgu{animation:lgu .46s ease-in-out;z-index:2}
+@keyframes lgu{0%{transform:none}45%{transform:translateY(-30%) scale(1.1)}100%{transform:none}}
+.dsp.dhit{animation:dhit .4s linear}
+@keyframes dhit{0%,100%{transform:translateX(0);filter:brightness(1)}20%{transform:translateX(-10px);filter:brightness(2.4)}40%{transform:translateX(10px)}60%{transform:translateX(-6px);filter:brightness(2.4)}80%{transform:translateX(4px)}}
+.dsp.fall{animation:none;transition:transform .9s cubic-bezier(.5,0,.9,.7),opacity .9s,filter .9s;transform:translateY(var(--fy)) rotate(var(--rot)) scale(.85);filter:grayscale(1) brightness(.6);opacity:.8}
+.dsp.champ{animation:champ .5s ease-in-out infinite alternate;z-index:2}
+@keyframes champ{to{transform:translateY(-4%) scale(1.06);filter:drop-shadow(0 0 12px var(--gold))}}
+#duo.shake{animation:dshake .32s}
+@keyframes dshake{0%,100%{transform:none}20%{transform:translate(-7px,4px)}40%{transform:translate(7px,-4px)}60%{transform:translate(-5px,-3px)}80%{transform:translate(4px,3px)}}
+.dflash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:7}
+.dflash.go{animation:dfl .45s}
+@keyframes dfl{0%{opacity:.9}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.dsp,.dflash.go,#duo.shake{animation:none}}
 </style>
 </head>
 <body>
@@ -244,6 +284,7 @@ button{font:inherit;color:inherit;cursor:pointer}
     <div class="menubtns">
       <button class="btn" id="bPlay">Jouer à deux</button>
       <button class="btn" id="bCpu">Contre l'ordinateur</button>
+      <button class="btn" id="bDuo">1 contre 1</button>
       <button class="btn alt" id="bDex">Pokédex</button>
       <button class="btn alt" id="bBadges">Badges</button>
       <button class="btn alt" id="bSnd">Son : oui</button>
@@ -252,6 +293,7 @@ button{font:inherit;color:inherit;cursor:pointer}
       <li><b>6 Pokémon</b> tirés au hasard pour chacun. Posez l'écran à plat, Joueur 2 en haut.</li>
       <li><b>6 manches maximum.</b> On choisit à tour de rôle, le premier change à chaque manche. Le combat est automatique. <b>Le premier à 4 victoires gagne</b> tout de suite. En cas d'égalité 3–3, chacun tire un Pokémon au hasard pour une manche décisive.</li>
       <li><b>Niveau 50</b> pour tous, avec les vraies stats de base et des IV tirés de 0 à 31. Sur chaque carte : PV, meilleure attaque (A), vitesse (V). Le plus rapide attaque en premier, avec une capacité offensive tirée au hasard parmi les siennes.</li>
+      <li><b>1 contre 1</b> : un Pokémon pour toi, un pour l'ordinateur, choisis par deux rouleaux. Combat éclair, 1 chance sur 18 d'obtenir un chromatique.</li>
       <li><b>▲ Force</b> inflige ×1,5 à ce type. <b>▼ Faiblesse</b> subit ×1,5 de ce type. <b>◆ Résistance</b> subit ×0,67.</li>
     </ul>
     <div class="note">Tous les Pokémon, leurs stats, leurs capacités et leurs sprites viennent de PokéAPI : connexion requise.</div>
@@ -270,6 +312,16 @@ button{font:inherit;color:inherit;cursor:pointer}
       <div class="fighter" id="f0"></div>
     </div>
     <div class="zone p1" id="z0"></div>
+  </section>
+
+  <section id="duo" class="screen" hidden>
+    <div class="duohead"><b>1 CONTRE 1</b><button class="quit" id="dQuit">Menu</button></div>
+    <div class="dinfo" id="dinfo1"></div>
+    <div class="dwin cpu" id="dwin1" data-tag="ORDINATEUR"></div>
+    <div class="dvs">VS</div>
+    <div class="dwin me" id="dwin0" data-tag="TOI"></div>
+    <div class="dinfo" id="dinfo0"></div>
+    <div class="dflash" id="dflash"></div>
   </section>
 
   <section id="dex" class="screen" hidden>
@@ -712,7 +764,7 @@ function show(id){
   var s=document.querySelectorAll('.screen');
   for(var i=0;i<s.length;i++) s[i].hidden=(s[i].id!==id);
   closeModal();
-  setMode(id==='game'?'battle':'menu');
+  setMode((id==='game'||id==='duo')?'battle':'menu');
   if(id==='menu') renderMenu();
   if(id==='dex') renderDex();
   if(id==='badges') renderBadges();
@@ -828,8 +880,8 @@ function renderMenu(){
 }
 
 /* ---------- Partie ---------- */
-function makeMon(rec){
-  var m=Object.assign({},rec,derive(rec.id,rec.types),{shiny:Math.random()<SHINY_RATE});
+function makeMon(rec,rate){
+  var m=Object.assign({},rec,derive(rec.id,rec.types),{shiny:Math.random()<(rate||SHINY_RATE)});
   m.iv=[0,0,0,0,0,0].map(function(){return Math.floor(Math.random()*32);}); /* IV tirés de 0 à 31 */
   m.st=calc(m.base,m.iv); m.hp=m.st.hp;
   return m;
@@ -859,7 +911,7 @@ async function startGame(){
 }
 function newGame(recs){
   var lvl0=trainer().lvl, b0=badgeSnap();
-  var ms=recs.map(makeMon), hands=[ms.slice(0,6),ms.slice(6)], fresh=0;
+  var ms=recs.map(function(r){return makeMon(r);}), hands=[ms.slice(0,6),ms.slice(6)], fresh=0;
   hands.forEach(function(h){h.forEach(function(m){
     if(!DEX.seen[m.id]){DEX.seen[m.id]=1;fresh++;}
     DEX.ty[m.id]=m.types.join(',');
@@ -1165,6 +1217,177 @@ function endGame(){
   $('#eMenu').onclick=function(){w.remove();show('menu');};
 }
 
+/* ---------- Mode 1 contre 1 ---------- */
+var DUO_SHINY=1/18, DU=null;
+function dwait(ms){return new Promise(function(res){setTimeout(res,ms);});}
+function drumNoise(when,dur,vol,hp){
+  if(!SOUND||!AC) return;
+  try{
+    var t=AC.currentTime+when, src=AC.createBufferSource(), f=AC.createBiquadFilter(), g=AC.createGain();
+    src.buffer=noiseBuf(); f.type='highpass'; f.frequency.value=hp;
+    g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    src.connect(f); f.connect(g); g.connect(AC.destination); src.start(t,Math.random()*0.5); src.stop(t+dur+0.02);
+  }catch(e){}
+}
+/* roulement de tambour qui accélère et monte en volume */
+function drumRoll(ms){
+  if(!SOUND||!AC) return;
+  duck(ms+1400);
+  var t=0, p;
+  while(t<ms){
+    p=t/ms;
+    beep(95+Math.random()*30,0.07,'triangle',(0.03+0.09*p)*1.2,t/1000);
+    drumNoise(t/1000,0.05,(0.03+0.09*p)*0.8,1500);
+    t+=120-82*p;
+  }
+}
+function crashSfx(){drumNoise(0,0.7,0.14,700);beep(70,0.5,'sine',0.14);beep(140,0.2,'sawtooth',0.05);}
+/* combat simulé d'avance avec exactement les mêmes règles que le duel (stats niveau 50, capacités, force/faiblesse) */
+function simBattle(A,B){
+  var M=[A,B], hp=[A.hp,B.hp], turns=[], t=0;
+  var order=(A.st.spe===B.st.spe)?(Math.random()<.5?[0,1]:[1,0]):(A.st.spe>B.st.spe?[0,1]:[1,0]);
+  while(hp[0]>0&&hp[1]>0&&t<60){
+    var att=order[t%2], def=1-att, a=M[att], d=M[def];
+    var mv=a.moves[Math.floor(Math.random()*a.moves.length)], mult=1;
+    if(d.types.indexOf(a.force)>-1) mult*=1.5;
+    if(mv.t===d.weak) mult*=1.5;
+    if(mv.t===d.res) mult*=2/3;
+    var phys=(mv.c==='P'), AT=phys?a.st.atk:a.st.spa, DF=phys?d.st.def:d.st.spd;
+    var dmg=Math.max(1,Math.round(((2*LV/5+2)*mv.p*AT/DF/50+2)*mult*(0.85+Math.random()*0.15)));
+    hp[def]=Math.max(0,hp[def]-dmg); turns.push({att:att,def:def,dmg:dmg}); t++;
+  }
+  var w=hp[0]<=0?1:(hp[1]<=0?0:(hp[0]/A.hp>=hp[1]/B.hp?0:1));
+  return {w:w,turns:turns};
+}
+async function startDuo(){
+  unlockAudio();
+  var cancelled=false, done=0;
+  showModal('<div class="sheet" id="lsheet"><h3>1 contre 1</h3><div class="sub">Les Pokémon arrivent…</div><div class="dbar"><i id="lprog" style="width:0%"></i></div><button class="btn alt" id="lcancel">Annuler</button></div>');
+  $('#lcancel').onclick=function(){cancelled=true;closeModal();};
+  var recs;
+  try{
+    recs=await pool(randomIds(2).map(function(id){
+      return function(){return getMon(id).then(function(r){
+        done++; var b=$('#lprog'); if(b) b.style.width=Math.round(done/2*100)+'%';
+        return r;
+      });};
+    }),2);
+  }catch(e){
+    if(cancelled) return;
+    showModal('<div class="sheet" id="lsheet"><h3>Connexion impossible</h3><div class="sub">Les Pokémon, leurs stats et leurs sprites viennent de PokéAPI. Vérifie ta connexion.</div><button class="btn" id="lretry">Réessayer</button><button class="btn alt" id="lback">Retour</button></div>');
+    $('#lretry').onclick=startDuo; $('#lback').onclick=closeModal;
+    return;
+  }
+  if(cancelled) return;
+  closeModal();
+  newDuo(recs);
+}
+function newDuo(recs){
+  var lvl0=trainer().lvl, b0=badgeSnap(), fresh=0;
+  var ms=[makeMon(recs[0],DUO_SHINY),makeMon(recs[1],DUO_SHINY)];
+  ms.forEach(function(m){
+    if(!DEX.seen[m.id]){DEX.seen[m.id]=1;fresh++;}
+    DEX.ty[m.id]=m.types.join(',');
+    if(m.shiny) DEX.shiny[m.id]=1;
+  });
+  save();
+  DU={token:{},mons:ms,lvl0:lvl0,b0:b0,fresh:fresh};
+  show('duo');
+  runDuo();
+}
+function duoInfo(pi,m){
+  $('#dinfo'+pi).innerHTML='<div class="fname">'+esc(m.name)+(m.shiny?' ✦':'')+'</div>'+
+    '<div class="row">'+m.types.map(function(t){return chip(t);}).join('')+chip(m.force,'▲')+chip(m.weak,'▼')+chip(m.res,'◆')+'</div>'+
+    '<div class="stl">PV '+m.st.hp+' · A '+Math.max(m.st.atk,m.st.spa)+' · V '+m.st.spe+' · Niv.'+LV+'</div>';
+}
+function duoReel(pi,m,d){
+  return new Promise(function(res){
+    var win=$('#dwin'+pi), K=16, h='', k;
+    for(k=0;k<K;k++) h+='<div class="dc" style="height:'+(100/(K+1)).toFixed(4)+'%">'+imgd(1+Math.floor(Math.random()*N))+'</div>';
+    h+='<div class="dc" style="height:'+(100/(K+1)).toFixed(4)+'%">'+img(m,m.shiny)+'</div>';
+    win.innerHTML='<div class="dstrip" id="dstrip'+pi+'" style="height:'+((K+1)*100)+'%"></div>';
+    var st=$('#dstrip'+pi); st.innerHTML=h; void st.offsetHeight;
+    st.style.transition='transform '+d+'ms cubic-bezier(.1,.7,.15,1)';
+    st.style.transform='translateY(-'+(K/(K+1)*100).toFixed(3)+'%)';
+    setTimeout(function(){
+      win.innerHTML='<div class="dsp" id="dsp'+pi+'">'+img(m,m.shiny)+'</div>';
+      sfx('hit'); duoInfo(pi,m); res();
+    },d+60);
+  });
+}
+function jackpotDuo(m){
+  var conf='', k;
+  for(k=0;k<30;k++) conf+='<i style="left:'+Math.round(Math.random()*100)+'%;animation-delay:'+(Math.random()*0.9).toFixed(2)+'s;animation-duration:'+(1.1+Math.random()*1.1).toFixed(2)+'s;background:'+(k%3===0?'#fff':(k%3===1?'var(--gold)':'var(--p2)'))+'"></i>';
+  var o=document.createElement('div'); o.className='jp';
+  o.innerHTML='<div class="jpbox"><b>SHINY HUNTER</b><span>✦ '+esc(m.name)+' chromatique ✦</span></div><div class="conf">'+conf+'</div>';
+  $('#duo').appendChild(o); sfx('fanfare');
+  setTimeout(function(){o.classList.add('out');},2300);
+  setTimeout(function(){if(o.parentNode)o.parentNode.removeChild(o);},2750);
+  return dwait(2800);
+}
+function duoFlash(){var f=$('#dflash');f.classList.remove('go');void f.offsetWidth;f.classList.add('go');}
+function duoShake(){var d=$('#duo');d.classList.remove('shake');void d.offsetWidth;d.classList.add('shake');}
+async function runDuo(){
+  var token=DU.token, A=DU.mons[0], B=DU.mons[1];
+  function alive(){return DU&&DU.token===token;}
+  var duo=$('#duo'); duo.className='screen';
+  $('#dinfo0').innerHTML='<div class="fname dim">Tirage…</div>'; $('#dinfo1').innerHTML='<div class="fname dim">Tirage…</div>';
+  $('#dwin0').innerHTML=''; $('#dwin1').innerHTML='';
+  await preload([spriteURL(A.id,A.shiny),spriteURL(B.id,B.shiny)],3000); if(!alive()) return;
+  /* deux rouleaux : l'ordinateur s'arrête en premier, puis le joueur */
+  var tick=setInterval(function(){beep(150+Math.random()*120,0.025,'square',0.012);},90);
+  await Promise.all([duoReel(1,B,2300),duoReel(0,A,3300)]);
+  clearInterval(tick);
+  if(!alive()) return;
+  var sh=[B,A].filter(function(m){return m.shiny;});
+  for(var i=0;i<sh.length;i++){await jackpotDuo(sh[i]); if(!alive()) return;}
+  await dwait(1700); if(!alive()) return;
+  /* combat : uniquement les sprites */
+  var sim=simBattle(A,B), vis=sim.turns.slice(0,6);
+  duo.classList.add('fight');
+  await dwait(900); if(!alive()) return;
+  var total=vis.length*680+700;
+  drumRoll(total);
+  var e0=$('#dsp0'), e1=$('#dsp1'), els=[e0,e1];
+  for(i=0;i<vis.length;i++){
+    var t=vis[i], att=els[t.att], def=els[t.def];
+    anim(att,t.att===0?'lgu':'lgd');
+    await dwait(230); if(!alive()) return;
+    anim(def,'dhit'); sfx('hit'); duoShake(); duoFlash();
+    await dwait(450); if(!alive()) return;
+  }
+  /* choc final : les deux Pokémon se percutent */
+  await dwait(250); if(!alive()) return;
+  anim(e0,'lgu'); anim(e1,'lgd');
+  await dwait(230); if(!alive()) return;
+  crashSfx(); duoShake(); duoFlash(); anim(e0,'dhit'); anim(e1,'dhit');
+  await dwait(520); if(!alive()) return;
+  var w=sim.w, l=1-w, loser=els[l], winner=els[w];
+  loser.classList.remove('dhit','lgu','lgd');
+  loser.style.setProperty('--fy',l===1?'-30%':'30%'); loser.style.setProperty('--rot',(Math.random()<.5?'':'-')+'90deg');
+  loser.classList.add('fall'); sfx('ko');
+  winner.classList.remove('dhit','lgu','lgd'); winner.classList.add('champ');
+  await dwait(1900); if(!alive()) return;
+  finishDuo(w);
+}
+function finishDuo(w){
+  var A=DU.mons[0], B=DU.mons[1], M=[A,B];
+  DEX.games++; if(w===0) DEX.cpuWins=(DEX.cpuWins||0)+1; save();
+  var msg=w===0?'TU GAGNES !':'L\'ORDINATEUR GAGNE !', col=w===0?'var(--p1)':'var(--p2)';
+  var half='<h2 style="color:'+col+'">'+msg+'</h2><div class="sub">'+esc(M[w].name)+(M[w].shiny?' ✦':'')+' bat '+esc(M[1-w].name)+(M[1-w].shiny?' ✦':'')+'</div>'+
+    '<div class="sub">Dresseur niv. '+trainer().lvl+(trainer().lvl>DU.lvl0?' ▲ niveau supérieur !':'')+'</div>'+
+    newBadgeLines(DU.b0)+
+    '<div class="sub">Pokédex '+(DU.fresh>0?'+'+DU.fresh+' nouveau'+(DU.fresh>1?'x':'')+' · ':'')+count(DEX.seen)+'/'+N+'</div>';
+  setMode('menu'); sfx('win'); if(trainer().lvl>DU.lvl0) sfx('lvl');
+  var wrap=document.createElement('div'); wrap.id='endwrap';
+  wrap.innerHTML='<div class="endhalf">'+half+'</div><div class="endbtns"><button class="btn" id="eAgain">Rejouer</button><button class="btn alt" id="eDex">Pokédex</button><button class="btn alt" id="eMenu">Menu</button></div>';
+  $('#app').appendChild(wrap);
+  badgePopups(newBadgeArr(DU.b0));
+  $('#eAgain').onclick=function(){wrap.remove();startDuo();};
+  $('#eDex').onclick=function(){wrap.remove();show('dex');};
+  $('#eMenu').onclick=function(){wrap.remove();show('menu');};
+}
+
 /* ---------- Pokédex ---------- */
 var DEXSH=false;
 function renderDex(){
@@ -1242,6 +1465,8 @@ function dexDetail(id){
 /* ---------- Événements ---------- */
 $('#bPlay').onclick=function(){VS=false;startGame();};
 $('#bCpu').onclick=function(){VS=true;startGame();};
+$('#bDuo').onclick=function(){VS=false;startDuo();};
+$('#dQuit').onclick=function(){if(DU)DU.token={};show('menu');};
 $('#bDex').onclick=function(){DEXSH=false;show('dex');};
 $('#bBack').onclick=function(){show('menu');};
 $('#bBadges').onclick=function(){show('badges');};
