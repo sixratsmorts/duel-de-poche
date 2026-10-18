@@ -1343,31 +1343,23 @@ async function runDuo(){
   for(var i=0;i<sh.length;i++){await jackpotDuo(sh[i]); if(!alive()) return;}
   await dwait(1700); if(!alive()) return;
   /* combat : uniquement les sprites */
-  var sim=simBattle(A,B), vis=sim.turns.slice(0,6);
+  var sim=simBattle(A,B);
   duo.classList.add('fight');
-  await dwait(900); if(!alive()) return;
-  var total=vis.length*680+700;
-  drumRoll(total);
+  await dwait(700); if(!alive()) return;
+  /* un seul choc, précédé d'un court roulement de tambour, puis le K.O. */
+  drumRoll(1100);
   var e0=$('#dsp0'), e1=$('#dsp1'), els=[e0,e1];
-  for(i=0;i<vis.length;i++){
-    var t=vis[i], att=els[t.att], def=els[t.def];
-    anim(att,t.att===0?'lgu':'lgd');
-    await dwait(230); if(!alive()) return;
-    anim(def,'dhit'); sfx('hit'); duoShake(); duoFlash();
-    await dwait(450); if(!alive()) return;
-  }
-  /* choc final : les deux Pokémon se percutent */
-  await dwait(250); if(!alive()) return;
+  await dwait(1000); if(!alive()) return;
   anim(e0,'lgu'); anim(e1,'lgd');
   await dwait(230); if(!alive()) return;
   crashSfx(); duoShake(); duoFlash(); anim(e0,'dhit'); anim(e1,'dhit');
-  await dwait(520); if(!alive()) return;
+  await dwait(420); if(!alive()) return;
   var w=sim.w, l=1-w, loser=els[l], winner=els[w];
   loser.classList.remove('dhit','lgu','lgd');
   loser.style.setProperty('--fy',l===1?'-30%':'30%'); loser.style.setProperty('--rot',(Math.random()<.5?'':'-')+'90deg');
   loser.classList.add('fall'); sfx('ko');
   winner.classList.remove('dhit','lgu','lgd'); winner.classList.add('champ');
-  await dwait(1900); if(!alive()) return;
+  await dwait(1700); if(!alive()) return;
   finishDuo(w);
 }
 function finishDuo(w){
