@@ -350,10 +350,10 @@ button{font:inherit;color:inherit;cursor:pointer}
   <section id="duo" class="screen" hidden>
     <div class="duohead"><span class="dcoins" id="dcoins"></span><b>1 CONTRE 1</b><button class="quit" id="dQuit">Menu</button></div>
     <div class="dinfo" id="dinfo1"></div>
-    <div class="dwin cpu" id="dwin1" data-tag="ORDINATEUR"></div>
+    <div class="dwin cpu" id="dwin1" data-tag="POKÉMON 1"></div>
     <div class="dvs">VS</div>
     <div id="dbet" hidden></div>
-    <div class="dwin me" id="dwin0" data-tag="TOI"></div>
+    <div class="dwin me" id="dwin0" data-tag="POKÉMON 2"></div>
     <div class="dinfo" id="dinfo0"></div>
     <div class="dflash" id="dflash"></div>
   </section>
@@ -1470,7 +1470,7 @@ async function runDuo(){
 }
 function finishDuo(w,bet){
   var A=DU.mons[0], B=DU.mons[1], M=[A,B];
-  DEX.games++; if(w===0) DEX.cpuWins=(DEX.cpuWins||0)+1; save();
+  DEX.games++; if(bet&&bet.side===w) DEX.cpuWins=(DEX.cpuWins||0)+1; save();
   var betLine='';
   DU.settled=true;
   if(bet){
@@ -1480,7 +1480,7 @@ function finishDuo(w,bet){
   walletTick();
   betLine+='<div class="sub">Pièces : '+nf(WALLET.coins)+(WALLET.coins<=0?' · +10 dans 1:00':'')+'</div>';
   renderCoins();
-  var msg=w===0?'TU GAGNES !':'L\'ORDINATEUR GAGNE !', col=w===0?'var(--p1)':'var(--p2)';
+  var msg=bet?(bet.side===w?'VICTOIRE !':'DÉFAITE'):esc(M[w].name)+' GAGNE !', col=bet?(bet.side===w?'var(--good)':'var(--bad)'):'var(--p1)';
   var half='<h2 style="color:'+col+'">'+msg+'</h2><div class="sub">'+esc(M[w].name)+(M[w].shiny?' ✦':'')+' bat '+esc(M[1-w].name)+(M[1-w].shiny?' ✦':'')+'</div>'+
     betLine+
     '<div class="sub">Dresseur niv. '+trainer().lvl+(trainer().lvl>DU.lvl0?' ▲ niveau supérieur !':'')+'</div>'+
