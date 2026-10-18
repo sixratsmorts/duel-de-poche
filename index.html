@@ -13,13 +13,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
+/* Le chiffre 5 des polices pixel est peu lisible : on le remplace par celui d'une police monospace nette du système */
+@font-face{font-family:'Chiffre5';font-weight:100 900;unicode-range:U+0035;src:local('Menlo'),local('Menlo Regular'),local('Consolas'),local('Courier New'),local('Courier'),local('DejaVu Sans Mono'),local('Arial'),local('Helvetica')}
 /* Mise en page : trois bandes face à face. Zone Joueur 2 retournée à 180° en haut, arène au centre, zone Joueur 1 en bas. Look unique, sombre, console de poche. */
 :root{
   --bg:#17122b; --surface:#241c45; --surface2:#31275c; --line:#4b3f8a;
   --ink:#f5efe0; --mute:#a99fd0; --p1:#ffc93c; --p2:#38e0c0;
   --good:#6ee06a; --warn:#ffb13c; --bad:#ff6a5e; --gold:#ffe27a;
-  --font-d:'Press Start 2P', ui-monospace, Menlo, monospace;
-  --font-b:'Pixelify Sans', ui-monospace, Menlo, monospace;
+  --font-d:'Chiffre5','Press Start 2P', ui-monospace, Menlo, monospace;
+  --font-b:'Chiffre5','Pixelify Sans', ui-monospace, Menlo, monospace;
   color-scheme: dark;
 }
 [hidden]{display:none!important}
@@ -74,7 +76,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 @keyframes blink{50%{opacity:.35}}
 .grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:6px}
 .stl{font-size:9px;color:var(--mute);white-space:nowrap}
-.card{position:relative;display:grid;grid-template-rows:minmax(0,1fr) auto auto auto;justify-items:center;gap:1px;padding:3px 2px;min-height:0;min-width:0;background:var(--surface);border:2px solid var(--line);border-radius:6px;overflow:hidden}
+.card{cursor:pointer;text-align:center;color:inherit;font:inherit;position:relative;display:grid;grid-template-rows:minmax(0,1fr) auto auto auto;justify-items:center;gap:1px;padding:3px 2px;min-height:0;min-width:0;background:var(--surface);border:2px solid var(--line);border-radius:6px;overflow:hidden}
 .card.sel{border-color:var(--pc);box-shadow:0 0 0 2px var(--pc) inset}
 .card.picked{border-color:var(--pc);background:var(--surface2)}
 .card.used{opacity:.4;filter:grayscale(.8)}
@@ -132,7 +134,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .dbar i{display:block;height:100%;background:var(--gold)}
 #dexscroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px}
 #dexgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px}
-.dcell{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px 4px;background:var(--surface);border:2px solid var(--line);border-radius:6px;min-width:0}
+.dcell{cursor:pointer;text-align:center;color:inherit;font:inherit;position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px 4px;background:var(--surface);border:2px solid var(--line);border-radius:6px;min-width:0}
 .dcell img{width:56px;height:56px}
 .dcell.unseen img{filter:brightness(0) opacity(.35)}
 .dcell .no{font-size:10px;color:var(--mute)}
@@ -847,13 +849,13 @@ function monOf(pi){return G.tb?G.tb[pi]:G.hands[pi][G.picks[pi]];}
 function cardHTML(m,pi,i){
   var used=G.used[pi][i], picked=(G.picks[pi]===i&&!G.tb), sel=(G.turn===pi&&G.phase==='pick'&&G.sel===i);
   var cls='card'+(used?' used':'')+(picked?' picked':'')+(sel?' sel':'')+(m.shiny?' shiny':'');
-  return '<button class="'+cls+'" data-p="'+pi+'" data-i="'+i+'"'+(used?' disabled':'')+'>'+
+  return '<div role="button" tabindex="'+(used?'-1':'0')+'" class="'+cls+'" data-p="'+pi+'" data-i="'+i+'"'+(used?' aria-disabled="true"':'')+'>'+
     '<span class="sprwrap">'+img(m,m.shiny)+(m.shiny?'<span class="star">✦</span>':'')+'</span>'+
     '<span class="nm">'+esc(m.name)+'</span>'+
     '<span class="stl">PV'+m.st.hp+' A'+Math.max(m.st.atk,m.st.spa)+' V'+m.st.spe+'</span>'+
     '<span class="atts">'+chip(m.force,'▲')+chip(m.weak,'▼')+chip(m.res,'◆')+'</span>'+
     (used?'<b class="mark '+(used==='W'?'w':'l')+'">'+(used==='W'?'V':'D')+'</b>':'')+
-  '</button>';
+  '</div>';
 }
 function renderZone(pi){
   var active=(G.phase==='pick'&&G.turn===pi);
@@ -893,7 +895,7 @@ function renderPickLog(){
 }
 
 function onZone(e){
-  var t=e.target.closest('button'); if(!t||!G) return;
+  var t=e.target.closest('.card,button'); if(!t||!G) return;
   var pi=+t.dataset.p;
   if(G.cpu&&pi===1) return;
   if(G.phase!=='pick'||G.turn!==pi) return;
@@ -1033,9 +1035,9 @@ function renderDex(){
     var ids=Object.keys(DEX.shiny).map(Number).sort(function(a,c){return a-c;});
     if(!ids.length) h='<div class="dempty">Aucun chromatique pour l\'instant.<br>Ils apparaissent ici dès qu\'un tirage en donne un (1 chance sur 40).</div>';
     ids.forEach(function(id){
-      h+='<button class="dcell" data-id="'+id+'"><span class="star">✦</span>'+
+      h+='<div role="button" tabindex="0" class="dcell" data-id="'+id+'"><span class="star">✦</span>'+
         '<img alt="" loading="lazy" src="'+spriteURL(id,true)+'" onerror="__fb(this,'+id+',true)">'+
-        '<span class="no">#'+('000'+id).slice(-4)+'</span><span class="nm">'+esc(NAMEC[id]||('#'+id))+'</span></button>';
+        '<span class="no">#'+('000'+id).slice(-4)+'</span><span class="nm">'+esc(NAMEC[id]||('#'+id))+'</span></div>';
     });
     $('#dexgrid').innerHTML=h;
     fillDexNames();
@@ -1045,9 +1047,9 @@ function renderDex(){
   $('#dbar').style.width=Math.round(seen/N*100)+'%';
   for(id=1;id<=N;id++){
     var s=DEX.seen[id], nm=s?(NAMEC[id]||('#'+id)):'???';
-    h+='<button class="dcell'+(s?'':' unseen')+'" data-id="'+id+'">'+(DEX.shiny[id]?'<span class="star">✦</span>':'')+
+    h+='<div role="button" tabindex="0" class="dcell'+(s?'':' unseen')+'" data-id="'+id+'">'+(DEX.shiny[id]?'<span class="star">✦</span>':'')+
       '<img alt="" loading="lazy" src="'+spriteURL(id,false)+'" onerror="__fb(this,'+id+',false)">'+
-      '<span class="no">#'+('000'+id).slice(-4)+'</span><span class="nm">'+esc(nm)+'</span></button>';
+      '<span class="no">#'+('000'+id).slice(-4)+'</span><span class="nm">'+esc(nm)+'</span></div>';
   }
   $('#dexgrid').innerHTML=h;
   fillDexNames();
@@ -1117,6 +1119,9 @@ $('#bQuit').onclick=function(){
 };
 $('#dexgrid').addEventListener('click',function(e){
   var c=e.target.closest('.dcell'); if(c) dexDetail(+c.dataset.id);
+});
+document.addEventListener('keydown',function(e){
+  if((e.key==='Enter'||e.key===' ')&&e.target&&e.target.getAttribute&&e.target.getAttribute('role')==='button'){e.preventDefault();e.target.click();}
 });
 $('#modal').addEventListener('click',function(e){if(e.target.id==='modal'&&$('#sheet'))closeModal();});
 
