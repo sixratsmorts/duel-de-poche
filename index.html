@@ -31,7 +31,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-b);fo
 img{image-rendering:crisp-edges;image-rendering:pixelated}
 button{font:inherit;color:inherit;cursor:pointer}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-#app{position:fixed;top:0;left:0;right:0;bottom:0}
+#app{position:fixed;top:0;bottom:0;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px))}
 .screen{position:absolute;inset:0;display:flex;flex-direction:column;min-width:0}
 
 .btn{font-family:var(--font-d);font-size:10px;letter-spacing:.03em;line-height:1.4;padding:11px 14px;background:var(--ink);color:#1c1530;border:0;border-radius:4px;box-shadow:0 4px 0 #8d84b8}
