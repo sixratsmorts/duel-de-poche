@@ -46,6 +46,13 @@ button{font:inherit;color:inherit;cursor:pointer}
 #menu h1{margin:0;font-family:var(--font-d);font-size:22px;line-height:1.5;color:var(--gold);text-shadow:3px 3px 0 #6a3fbf;text-wrap:balance}
 .hero{display:flex;gap:6px;justify-content:center}
 .hero img{width:clamp(52px,17vw,72px);height:clamp(52px,17vw,72px)}
+.trainer{width:min(320px,100%);background:var(--surface);border:2px solid var(--line);border-radius:6px;padding:8px 10px;display:flex;flex-direction:column;gap:6px;text-align:left}
+.trow{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.tlvl{font-family:var(--font-d);font-size:12px;color:var(--gold)}
+.tpts{font-size:12px;color:var(--mute)}
+.tbar{height:10px;background:#0d0a1c;border:1px solid var(--line);border-radius:2px;overflow:hidden}
+.tbar i{display:block;height:100%;background:linear-gradient(90deg,var(--p2),var(--gold))}
+.tnext{font-size:11px;color:var(--mute)}
 .menubtns{display:flex;flex-direction:column;gap:14px;width:min(320px,100%)}
 .rules{margin:0;padding:0;list-style:none;max-width:330px;text-align:left;color:var(--mute);font-size:14px;display:flex;flex-direction:column;gap:6px}
 .rules b{color:var(--ink);font-weight:600}
@@ -196,6 +203,7 @@ button{font:inherit;color:inherit;cursor:pointer}
   <section id="menu" class="screen">
     <h1>DUEL<br>DE POCHE</h1>
     <div class="hero" id="hero"></div>
+    <div class="trainer" id="trainer"></div>
     <div class="menubtns">
       <button class="btn" id="bPlay">Jouer à deux</button>
       <button class="btn alt" id="bDex">Pokédex</button>
@@ -521,6 +529,28 @@ function show(id){
 function showModal(html){var m=$('#modal');m.innerHTML=html;m.hidden=false;}
 function closeModal(){var m=$('#modal');m.hidden=true;m.innerHTML='';var e=$('#endwrap');if(e)e.remove();}
 
+/* ---------- Niveau de Dresseur (1 à 100) ---------- */
+/* 1 point par Pokémon différent, 2 points s'il a été obtenu chromatique. 1000 points = niveau 100 (plafond). */
+var TR_MAX=1000, TR_LVL=100;
+function trainerPts(){
+  var p=0; Object.keys(DEX.seen).forEach(function(id){p+=DEX.shiny[id]?2:1;});
+  Object.keys(DEX.shiny).forEach(function(id){if(!DEX.seen[id])p+=2;});
+  return p;
+}
+function trLevelFloor(l){return Math.ceil((l-1)*TR_MAX/(TR_LVL-1));} /* points requis pour atteindre le niveau l */
+function trainer(){
+  var pts=trainerPts(), lvl=1;
+  while(lvl<TR_LVL&&pts>=trLevelFloor(lvl+1)) lvl++;
+  var lo=trLevelFloor(lvl), hi=lvl<TR_LVL?trLevelFloor(lvl+1):TR_MAX;
+  return {pts:pts,lvl:lvl,lo:lo,hi:hi,max:lvl>=TR_LVL,pct:lvl>=TR_LVL?100:Math.round((pts-lo)/(hi-lo)*100)};
+}
+function renderTrainer(){
+  var t=trainer();
+  $('#trainer').innerHTML='<div class="trow"><span class="tlvl">DRESSEUR NIV. '+t.lvl+'</span><span class="tpts">'+Math.min(t.pts,TR_MAX)+' / '+TR_MAX+' pts</span></div>'+
+    '<div class="tbar"><i style="width:'+t.pct+'%"></i></div>'+
+    '<div class="tnext">'+(t.max?'Niveau maximum atteint':(t.hi-t.pts)+' pt'+(t.hi-t.pts>1?'s':'')+' avant le niveau '+(t.lvl+1))+' · Pokémon +1 · chromatique +2</div>';
+}
+
 /* ---------- Menu ---------- */
 var HERO=[{id:25,types:['el']},{id:6,types:['fi','fl']},{id:133,types:['no']},{id:150,types:['ps']}];
 function renderMenu(){
@@ -528,6 +558,7 @@ function renderMenu(){
   $('#hero').innerHTML=h;
   $('#bDex').textContent='Pokédex '+count(DEX.seen)+'/'+N;
   $('#bSnd').textContent='Son : '+(SOUND?'oui':'non');
+  renderTrainer();
 }
 
 /* ---------- Partie ---------- */
@@ -566,9 +597,10 @@ function newGame(recs){
     if(!DEX.seen[m.id]){DEX.seen[m.id]=1;fresh++;}
     if(m.shiny) DEX.shiny[m.id]=1;
   });});
+  var lvl0=trainer().lvl;
   DEX.games++; save();
   G={hands:hands,score:[0,0],round:0,first:0,turn:-1,picks:[null,null],sel:null,
-     used:[{},{}],roundRes:[],phase:'draw',fresh:fresh,token:{},fast:false,hp:null,quitArm:false,tb:null};
+     used:[{},{}],roundRes:[],lvl0:lvl0,phase:'draw',fresh:fresh,token:{},fast:false,hp:null,quitArm:false,tb:null};
   show('game');
   runDraw();
 }
@@ -801,6 +833,7 @@ function endGame(){
   var col=win===0?'var(--p1)':(win===1?'var(--p2)':'var(--ink)');
   var half='<h2 style="color:'+col+'">'+msg+'</h2><div class="big">'+a+' – '+b+'</div>'+
     (G.tb?'<div class="sub">Décidé à la manche décisive</div>':'')+
+    '<div class="sub">Dresseur niv. '+trainer().lvl+(trainer().lvl>G.lvl0?' ▲ niveau supérieur !':'')+'</div>'+
     '<div class="sub">Pokédex '+(G.fresh>0?'+'+G.fresh+' nouveau'+(G.fresh>1?'x':'')+' · ':'')+count(DEX.seen)+'/'+N+'</div>';
   var w=document.createElement('div'); w.id='endwrap';
   w.innerHTML='<div class="endhalf rot">'+half+'</div>'+
