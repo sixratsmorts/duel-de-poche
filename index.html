@@ -141,6 +141,37 @@ button{font:inherit;color:inherit;cursor:pointer}
 .dcell .nm{font-size:12px}
 .dcell .star{top:2px;right:4px}
 
+/* Badges */
+#badges{gap:8px}
+#bscroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:14px}
+.bsec{margin:12px 0 6px;font-family:var(--font-d);font-size:10px;color:var(--gold);font-weight:400}
+.bsecgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.bcard{display:flex;gap:8px;align-items:center;padding:6px;background:var(--surface);border:2px solid var(--line);border-radius:6px;min-width:0}
+.bcard.t4{border-color:#8ff0ff}
+.medal{flex:none;width:42px;height:42px;border-radius:50%;border:4px solid #4b3f8a;background:#1b1535;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:9px;color:var(--mc,#a99fd0)}
+.t0 .medal{filter:grayscale(1);opacity:.55}
+.t1 .medal{border-color:#cd7f32}
+.t2 .medal{border-color:#c9d1e0}
+.t3 .medal{border-color:#ffd23c;box-shadow:0 0 6px #ffd23c88}
+.t4 .medal{border-color:#8ff0ff;box-shadow:0 0 10px #8ff0ffaa}
+.binfo{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}
+.bname{font-size:12px;font-weight:600;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btier{font-size:11px;color:var(--mute)}
+.t1 .btier{color:#e0a060}.t2 .btier{color:#c9d1e0}.t3 .btier{color:#ffd23c}.t4 .btier{color:#8ff0ff}
+.bbar{height:5px;background:#0d0a1c;border-radius:2px;overflow:hidden}
+.bbar i{display:block;height:100%;background:var(--gold)}
+.bprog{font-size:10px;color:var(--mute)}
+.newb{color:var(--gold);font-size:13px}
+#bpop{position:absolute;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(circle at 50% 45%,rgba(255,226,122,.35),rgba(10,7,24,.94) 70%);animation:jpin .25s ease-out}
+.bpbox{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:0 16px}
+.bplabel{font-family:var(--font-d);font-size:13px;color:var(--gold);animation:jpbounce .6s ease-in-out infinite alternate}
+.medal.big{width:104px;height:104px;border-width:8px;font-size:22px;animation:bpspin .9s cubic-bezier(.2,1.3,.4,1)}
+.bpbox.t1 .medal{border-color:#cd7f32}.bpbox.t2 .medal{border-color:#c9d1e0}.bpbox.t3 .medal{border-color:#ffd23c;box-shadow:0 0 18px #ffd23c99}.bpbox.t4 .medal{border-color:#8ff0ff;box-shadow:0 0 26px #8ff0ffbb}
+.bpname{font-size:20px;font-weight:700}
+.bptier{font-family:var(--font-d);font-size:12px;color:var(--gold)}
+.bpbox.t1 .bptier{color:#e0a060}.bpbox.t2 .bptier{color:#c9d1e0}.bpbox.t4 .bptier{color:#8ff0ff}
+.bpnext{font-size:12px;color:var(--mute);margin-top:6px}
+@keyframes bpspin{0%{transform:scale(.1) rotate(-360deg);opacity:0}70%{transform:scale(1.25) rotate(15deg);opacity:1}100%{transform:scale(1) rotate(0)}}
 /* Tirage façon machine à sous */
 .reelpad{height:36px;flex:none}
 .card.reel{cursor:default}
@@ -157,7 +188,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .jp{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 50%,rgba(255,226,122,.45),rgba(23,18,43,.6) 75%);animation:jpin .25s ease-out;transition:opacity .4s}
 .jp.out{opacity:0}
 .jpbox{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:0 8px;animation:jpbounce .6s ease-in-out infinite alternate}
-.jpbox b{font-family:var(--font-d);font-size:22px;letter-spacing:.05em;background:linear-gradient(90deg,#ffe27a,#ff6a5e,#38e0c0,#ffe27a);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:jpshine .7s linear infinite;filter:drop-shadow(0 2px 0 #6a3fbf)}
+.jpbox b{font-family:var(--font-d);font-size:17px;letter-spacing:.05em;background:linear-gradient(90deg,#ffe27a,#ff6a5e,#38e0c0,#ffe27a);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:jpshine .7s linear infinite;filter:drop-shadow(0 2px 0 #6a3fbf)}
 .jpbox span{font-size:15px;font-weight:700;color:var(--gold);text-shadow:0 2px 0 #0d0a1c}
 .conf i{position:absolute;top:-10px;width:7px;height:7px;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(360px) rotate(540deg)}}
@@ -199,7 +230,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 
 @media (prefers-reduced-motion:reduce){
   .zone.active .zstat{animation:none}
-  .lunge,.hit,.pop,.thud,.jp,.jpbox,.jpbox b,.conf i,.card.landed.shiny{animation:none}
+  .lunge,.hit,.pop,.thud,.jp,.jpbox,.jpbox b,.conf i,.card.landed.shiny,#bpop,.bplabel,.medal.big{animation:none}
   .hpfill{transition:none}
 }
 </style>
@@ -214,11 +245,12 @@ button{font:inherit;color:inherit;cursor:pointer}
       <button class="btn" id="bPlay">Jouer à deux</button>
       <button class="btn" id="bCpu">Contre l'ordinateur</button>
       <button class="btn alt" id="bDex">Pokédex</button>
+      <button class="btn alt" id="bBadges">Badges</button>
       <button class="btn alt" id="bSnd">Son : oui</button>
     </div>
     <ul class="rules">
       <li><b>6 Pokémon</b> tirés au hasard pour chacun. Posez l'écran à plat, Joueur 2 en haut.</li>
-      <li><b>6 manches.</b> On choisit à tour de rôle, le premier change à chaque manche. Le combat est automatique. En cas d'égalité 3–3, chacun tire un Pokémon au hasard pour une manche décisive.</li>
+      <li><b>6 manches maximum.</b> On choisit à tour de rôle, le premier change à chaque manche. Le combat est automatique. <b>Le premier à 4 victoires gagne</b> tout de suite. En cas d'égalité 3–3, chacun tire un Pokémon au hasard pour une manche décisive.</li>
       <li><b>Niveau 50</b> pour tous, avec les vraies stats de base et des IV tirés de 0 à 31. Sur chaque carte : PV, meilleure attaque (A), vitesse (V). Le plus rapide attaque en premier, avec une capacité offensive tirée au hasard parmi les siennes.</li>
       <li><b>▲ Force</b> inflige ×1,5 à ce type. <b>▼ Faiblesse</b> subit ×1,5 de ce type. <b>◆ Résistance</b> subit ×0,67.</li>
     </ul>
@@ -249,6 +281,16 @@ button{font:inherit;color:inherit;cursor:pointer}
     </div>
     <div class="dbar"><i id="dbar"></i></div>
     <div id="dexscroll"><div id="dexgrid"></div></div>
+  </section>
+
+  <section id="badges" class="screen" hidden>
+    <div class="dhead">
+      <button class="btn alt" id="bBackB">Retour</button>
+      <h2>BADGES</h2>
+      <span class="dcount" id="bcount"></span>
+    </div>
+    <div class="dbar"><i id="bbar"></i></div>
+    <div id="bscroll"><div id="bgrid"></div></div>
   </section>
 
   <div id="modal" hidden></div>
@@ -484,8 +526,10 @@ initN();
 /* ---------- Pokédex (stockage local, par appareil) ---------- */
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}
 var KEY='duel-de-poche-dex-v1';
-var DEX={seen:{},shiny:{},games:0,wins:[0,0],ties:0};
+var DEX={seen:{},shiny:{},ty:{},games:0,wins:[0,0],ties:0,cpuWins:0,sweeps:0,tbWins:0};
 try{var sv=localStorage.getItem(KEY); if(sv) DEX=Object.assign(DEX,JSON.parse(sv));}catch(e){}
+if(!DEX.ty) DEX.ty={};
+Object.keys(DEX.seen).forEach(function(id){if(!DEX.ty[id]&&MONC[id]) DEX.ty[id]=MONC[id].types.join(',');});
 function save(){try{localStorage.setItem(KEY,JSON.stringify(DEX));}catch(e){}}
 
 /* ---------- Son (WebAudio, activable) ---------- */
@@ -610,9 +654,24 @@ function applyMusic(){
   if(want) startMusic(want);
 }
 function setMode(m){MODE=m;applyMusic();}
+function duck(ms){
+  if(!MUS||!AC) return;
+  try{var g=MUS.out.gain, t=AC.currentTime;
+    g.cancelScheduledValues(t); g.setValueAtTime(g.value,t); g.linearRampToValueAtTime(0.18,t+0.15);
+    g.setValueAtTime(0.18,t+ms/1000); g.linearRampToValueAtTime(1,t+ms/1000+0.6);}catch(e){}
+}
 /* effets sonores courts */
 function sfx(kind){
   if(!SOUND||!AC) return;
+  if(kind==='fanfare'){
+    duck(2600);
+    [523,659,784,1047].forEach(function(f,i){beep(f,0.13,'square',0.06,i*0.1);});
+    [784,1047,1319].forEach(function(f,i){beep(f,0.2,'square',0.06,0.5+i*0.13);});
+    [1047,1319,1568].forEach(function(f){beep(f,0.9,'square',0.045,0.95);});
+    [262,330,392].forEach(function(f){beep(f,0.9,'triangle',0.07,0.95);});
+    [1568,1319,1568,2093].forEach(function(f,i){beep(f,0.12,'square',0.04,1.3+i*0.12);});
+    return;
+  }
   if(kind==='hit'){beep(160,0.09,'sawtooth',0.06);beep(90,0.12,'square',0.05,0.04);}
   else if(kind==='ko'){[392,330,262,196].forEach(function(f,i){beep(f,0.14,'square',0.05,i*0.11);});}
   else if(kind==='win'){[523,659,784,1047].forEach(function(f,i){beep(f,0.16,'square',0.055,i*0.12);});beep(1047,0.45,'triangle',0.05,0.5);}
@@ -656,6 +715,7 @@ function show(id){
   setMode(id==='game'?'battle':'menu');
   if(id==='menu') renderMenu();
   if(id==='dex') renderDex();
+  if(id==='badges') renderBadges();
 }
 function showModal(html){var m=$('#modal');m.innerHTML=html;m.hidden=false;}
 function closeModal(){var m=$('#modal');m.hidden=true;m.innerHTML='';var e=$('#endwrap');if(e)e.remove();}
@@ -682,6 +742,80 @@ function renderTrainer(){
     '<div class="tnext">'+(t.max?'Niveau maximum atteint':(t.hi-t.pts)+' pt'+(t.hi-t.pts>1?'s':'')+' avant le niveau '+(t.lvl+1))+' · Pokémon +1 · chromatique +2</div>';
 }
 
+
+/* ---------- Badges (4 niveaux : Bronze, Argent, Or, Platine) ---------- */
+var TIERN=['Bronze','Argent','Or','Platine'];
+var GENS=[[1,151,'Kanto'],[152,251,'Johto'],[252,386,'Hoenn'],[387,493,'Sinnoh'],[494,649,'Unys'],[650,721,'Kalos'],[722,809,'Alola'],[810,905,'Galar'],[906,1025,'Paldea']];
+function badgeList(){
+  var seen=Object.keys(DEX.seen).map(Number), shi=Object.keys(DEX.shiny).map(Number), tyC={}, shC={}, L=[];
+  Object.keys(T).forEach(function(t){tyC[t]=0;shC[t]=0;});
+  seen.forEach(function(id){(DEX.ty[id]||'').split(',').forEach(function(t){if(tyC[t]!==undefined)tyC[t]++;});});
+  shi.forEach(function(id){(DEX.ty[id]||'').split(',').forEach(function(t){if(shC[t]!==undefined)shC[t]++;});});
+  function add(cat,id,name,sym,col,val,tiers){L.push({cat:cat,id:id,name:name,sym:sym,col:col,val:val,tiers:tiers});}
+  add('Pokédex','dex','Pokédex','№','#f5efe0',seen.length,[25,150,500,1000]);
+  add('Pokédex','lvl','Niveau de Dresseur','NV','#f5efe0',trainer().lvl,[10,25,50,100]);
+  add('Chromatiques','shiny','Chasseur de chromatiques','✦','#ffe27a',shi.length,[1,5,15,40]);
+  Object.keys(T).forEach(function(t){add('Types','ty_'+t,'Spécialiste '+T[t][0],T[t][1],T[t][2],tyC[t],[5,15,30,60]);});
+  Object.keys(T).forEach(function(t){add('Chromatiques par type','sh_'+t,'Éclat '+T[t][0],'✦'+T[t][1].charAt(0),T[t][2],shC[t],[1,3,8,15]);});
+  GENS.forEach(function(g,i){
+    var size=g[1]-g[0]+1, c=0; seen.forEach(function(id){if(id>=g[0]&&id<=g[1])c++;});
+    add('Générations','g'+i,'Explorateur '+g[2],'G'+(i+1),'#78c850',c,[.25,.5,.75,1].map(function(p){return Math.ceil(size*p);}));
+  });
+  add('Combat','games','Dresseur assidu','▶','#6890f0',DEX.games||0,[1,10,50,200]);
+  add('Combat','cpu','Vainqueur de l\'ordinateur','VS','#38e0c0',DEX.cpuWins||0,[1,10,30,100]);
+  add('Combat','sweep','Balayage 4–0','4-0','#ff6a5e',DEX.sweeps||0,[1,3,10,25]);
+  add('Combat','tb','Maître du suspense','7','#f85888',DEX.tbWins||0,[1,3,10,25]);
+  return L;
+}
+function badgeTier(b){var t=0;while(t<4&&b.val>=b.tiers[t])t++;return t;}
+function badgeSnap(){var o={};badgeList().forEach(function(b){o[b.id]=badgeTier(b);});return o;}
+function renderBadges(){
+  var L=badgeList(), tot=L.length*4, got=0, h='', cat='';
+  L.forEach(function(b){
+    var t=badgeTier(b); got+=t;
+    if(b.cat!==cat){if(cat) h+='</div>'; cat=b.cat; h+='<h3 class="bsec">'+esc(cat)+'</h3><div class="bsecgrid">';}
+    var next=t<4?b.tiers[t]:b.tiers[3], prev=t>0?b.tiers[t-1]:0;
+    var pct=t>=4?100:Math.round((Math.min(b.val,next)-prev)/(next-prev)*100);
+    h+='<div class="bcard t'+t+'"><div class="medal" style="--mc:'+b.col+'">'+esc(b.sym)+'</div><div class="binfo">'+
+      '<div class="bname">'+esc(b.name)+'</div><div class="btier">'+(t?TIERN[t-1]+(t<4?' · '+t+'/4':' · max'):'À débloquer')+'</div>'+
+      '<div class="bbar"><i style="width:'+pct+'%"></i></div><div class="bprog">'+(t>=4?b.val:b.val+' / '+next)+'</div></div></div>';
+  });
+  if(cat) h+='</div>';
+  $('#bgrid').innerHTML=h;
+  $('#bcount').textContent=got+'/'+tot;
+  $('#bbar').style.width=Math.round(got/tot*100)+'%';
+}
+function badgeSummary(){var L=badgeList(),g=0;L.forEach(function(b){g+=badgeTier(b);});return g+'/'+(L.length*4);}
+function newBadgeArr(before){
+  var out=[];
+  badgeList().forEach(function(b){var t=badgeTier(b); if(t>(before[b.id]||0)) out.push({name:b.name,sym:b.sym,col:b.col,tier:t});});
+  return out;
+}
+function badgePopups(list){
+  if(!list.length) return;
+  var i=0, shown=list.slice(0,5), timer=null;
+  function next(){
+    clearTimeout(timer);
+    var old=document.getElementById('bpop'); if(old) old.remove();
+    if(i>=shown.length) return;
+    var b=shown[i++], conf='', k;
+    for(k=0;k<34;k++) conf+='<i style="left:'+Math.round(Math.random()*100)+'%;animation-delay:'+(Math.random()*0.9).toFixed(2)+'s;animation-duration:'+(1.2+Math.random()*1.2).toFixed(2)+'s;background:'+(k%3===0?'#fff':(k%3===1?'var(--gold)':b.col))+'"></i>';
+    var o=document.createElement('div'); o.id='bpop';
+    o.innerHTML='<div class="bpbox t'+b.tier+'"><div class="bplabel">NOUVEAU BADGE</div><div class="medal big" style="--mc:'+b.col+'">'+esc(b.sym)+'</div>'+
+      '<div class="bpname">'+esc(b.name)+'</div><div class="bptier">'+TIERN[b.tier-1]+'</div><div class="bpnext">'+(i<shown.length?'Touche pour la suite':'Touche pour continuer')+'</div></div><div class="conf">'+conf+'</div>';
+    o.onclick=next; $('#app').appendChild(o);
+    sfx('fanfare');
+    timer=setTimeout(next,3600);
+  }
+  next();
+}
+function newBadgeLines(before){
+  var out=[];
+  badgeList().forEach(function(b){var t=badgeTier(b); if(t>(before[b.id]||0)) out.push('<div class="sub newb">★ '+esc(b.name)+' · '+TIERN[t-1]+'</div>');});
+  if(out.length>4){var n=out.length-3; out=out.slice(0,3); out.push('<div class="sub newb">★ +'+n+' autres badges</div>');}
+  return out.join('');
+}
+
 /* ---------- Menu ---------- */
 var HERO=[{id:25,types:['el']},{id:6,types:['fi','fl']},{id:133,types:['no']},{id:150,types:['ps']}];
 function renderMenu(){
@@ -689,6 +823,7 @@ function renderMenu(){
   $('#hero').innerHTML=h;
   $('#bDex').textContent='Pokédex '+count(DEX.seen)+'/'+N;
   $('#bSnd').textContent='Son : '+(SOUND?'oui':'non');
+  $('#bBadges').textContent='Badges '+badgeSummary();
   renderTrainer();
 }
 
@@ -723,16 +858,17 @@ async function startGame(){
   newGame(recs);
 }
 function newGame(recs){
+  var lvl0=trainer().lvl, b0=badgeSnap();
   var ms=recs.map(makeMon), hands=[ms.slice(0,6),ms.slice(6)], fresh=0;
   hands.forEach(function(h){h.forEach(function(m){
     if(!DEX.seen[m.id]){DEX.seen[m.id]=1;fresh++;}
+    DEX.ty[m.id]=m.types.join(',');
     if(m.shiny) DEX.shiny[m.id]=1;
   });});
-  var lvl0=trainer().lvl;
   DEX.games++; save();
   $('#game').classList.toggle('solo',VS);
   G={cpu:VS,cpuBusy:false,hands:hands,score:[0,0],round:0,first:0,turn:-1,picks:[null,null],sel:null,
-     used:[{},{}],roundRes:[],lvl0:lvl0,phase:'draw',fresh:fresh,token:{},fast:false,hp:null,quitArm:false,tb:null};
+     used:[{},{}],roundRes:[],lvl0:lvl0,b0:b0,phase:'draw',fresh:fresh,token:{},fast:false,hp:null,quitArm:false,tb:null};
   show('game');
   runDraw();
 }
@@ -801,12 +937,11 @@ function jackpot(pi,m){
     conf+='<i style="left:'+Math.round(Math.random()*100)+'%;animation-delay:'+(Math.random()*0.9).toFixed(2)+'s;animation-duration:'+(1.1+Math.random()*1.1).toFixed(2)+'s;background:'+(k%3===0?'#fff':(k%3===1?'var(--gold)':'var(--p2)'))+'"></i>';
   }
   var o=document.createElement('div'); o.className='jp';
-  o.innerHTML='<div class="jpbox"><b>JACKPOT</b><span>✦ '+esc(m.name)+' chromatique ✦</span></div><div class="conf">'+conf+'</div>';
+  o.innerHTML='<div class="jpbox"><b>SHINY HUNTER</b><span>✦ '+esc(m.name)+' chromatique ✦</span></div><div class="conf">'+conf+'</div>';
   z.appendChild(o);
-  [523,659,784,1047,1319,1568].forEach(function(f,i){beep(f,0.16,'square',0.06,i*0.09);});
-  beep(1047,0.5,'triangle',0.05,0.6); beep(1319,0.5,'triangle',0.05,0.6);
-  setTimeout(function(){o.classList.add('out');},1900);
-  setTimeout(function(){if(o.parentNode)o.parentNode.removeChild(o);},2350);
+  sfx('fanfare');
+  setTimeout(function(){o.classList.add('out');},2300);
+  setTimeout(function(){if(o.parentNode)o.parentNode.removeChild(o);},2750);
 }
 async function runDraw(){
   var token=G.token, any=false, maxT=0;
@@ -840,7 +975,7 @@ async function runDraw(){
     },stop+30);
     if(m.shiny) any=true;
   });});
-  await sleep(maxT+550+(any?2400:0)); if(!G||G.token!==token) return;
+  await sleep(maxT+550+(any?2800:0)); if(!G||G.token!==token) return;
   G.phase='pick'; G.turn=G.first; G.picks=[null,null]; G.sel=null;
   renderAll();
 }
@@ -949,6 +1084,7 @@ async function runBattle(){
   setLog('Manche pour '+(G.cpu&&w===1?'l\'ordinateur':'le Joueur '+(w+1)),esc(M[w].name)+' bat '+esc(M[l].name));
   await sleep(1900); if(G.token!==token) return;
   if(G.tb){endGame();return;}
+  if(G.score[0]>=4||G.score[1]>=4){endGame();return;}
   G.round++;
   if(G.round>=6){
     if(G.score[0]===G.score[1]){startTieBreak();return;}
@@ -991,6 +1127,7 @@ async function startTieBreak(){
   G.tb=fin; G.picks=[0,0];
   fin.forEach(function(m){
     if(!DEX.seen[m.id]){DEX.seen[m.id]=1;G.fresh++;}
+    DEX.ty[m.id]=m.types.join(',');
     if(m.shiny) DEX.shiny[m.id]=1;
   });
   save();
@@ -1006,18 +1143,23 @@ function endGame(){
   G.phase='over'; G.turn=-1;
   var a=G.score[0], b=G.score[1], win=a>b?0:(b>a?1:-1);
   if(win<0) DEX.ties=(DEX.ties||0)+1; else DEX.wins[win]++;
+  if(G.cpu&&win===0) DEX.cpuWins=(DEX.cpuWins||0)+1;
+  if(win>=0&&Math.min(a,b)===0&&Math.max(a,b)>=4) DEX.sweeps=(DEX.sweeps||0)+1;
+  if(win>=0&&G.tb) DEX.tbWins=(DEX.tbWins||0)+1;
   save(); renderRounds();
   var msg=win<0?'ÉGALITÉ !':(G.cpu?(win===0?'TU GAGNES !':'L\'ORDINATEUR GAGNE !'):'JOUEUR '+(win+1)+' GAGNE !');
   var col=win===0?'var(--p1)':(win===1?'var(--p2)':'var(--ink)');
   var half='<h2 style="color:'+col+'">'+msg+'</h2><div class="big">'+a+' – '+b+'</div>'+
     (G.tb?'<div class="sub">Décidé à la manche décisive</div>':'')+
     '<div class="sub">Dresseur niv. '+trainer().lvl+(trainer().lvl>G.lvl0?' ▲ niveau supérieur !':'')+'</div>'+
+    newBadgeLines(G.b0)+
     '<div class="sub">Pokédex '+(G.fresh>0?'+'+G.fresh+' nouveau'+(G.fresh>1?'x':'')+' · ':'')+count(DEX.seen)+'/'+N+'</div>';
   setMode('menu'); sfx('win'); if(trainer().lvl>G.lvl0) sfx('lvl');
   var w=document.createElement('div'); w.id='endwrap';
   var btns='<div class="endbtns"><button class="btn" id="eAgain">Rejouer</button><button class="btn alt" id="eDex">Pokédex</button><button class="btn alt" id="eMenu">Menu</button></div>';
   w.innerHTML=G.cpu?('<div class="endhalf">'+half+'</div>'+btns):('<div class="endhalf rot">'+half+'</div>'+btns+'<div class="endhalf">'+half+'</div>');
   $('#app').appendChild(w);
+  badgePopups(newBadgeArr(G.b0));
   $('#eAgain').onclick=function(){w.remove();startGame();};
   $('#eDex').onclick=function(){w.remove();show('dex');};
   $('#eMenu').onclick=function(){w.remove();show('menu');};
@@ -1102,6 +1244,8 @@ $('#bPlay').onclick=function(){VS=false;startGame();};
 $('#bCpu').onclick=function(){VS=true;startGame();};
 $('#bDex').onclick=function(){DEXSH=false;show('dex');};
 $('#bBack').onclick=function(){show('menu');};
+$('#bBadges').onclick=function(){show('badges');};
+$('#bBackB').onclick=function(){show('menu');};
 $('#bShiny').onclick=function(){DEXSH=!DEXSH;renderDex();$('#dexscroll').scrollTop=0;};
 $('#bSnd').onclick=function(){SOUND=SOUND?0:1;lsSet('duel-de-poche-sound',SOUND);unlockAudio();applyMusic();renderMenu();if(SOUND)beep(660,0.1,'square',0.05);};
 $('#z0').addEventListener('click',onZone);
