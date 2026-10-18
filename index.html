@@ -246,7 +246,6 @@ button{font:inherit;color:inherit;cursor:pointer}
       <button class="btn" id="bCpu">Contre l'ordinateur</button>
       <button class="btn alt" id="bDex">Pokédex</button>
       <button class="btn alt" id="bBadges">Badges</button>
-      <button class="btn alt" id="bSlots">Bandit manchot</button>
       <button class="btn alt" id="bSnd">Son : oui</button>
     </div>
     <ul class="rules">
@@ -1246,7 +1245,6 @@ $('#bCpu').onclick=function(){VS=true;startGame();};
 $('#bDex').onclick=function(){DEXSH=false;show('dex');};
 $('#bBack').onclick=function(){show('menu');};
 $('#bBadges').onclick=function(){show('badges');};
-$('#bSlots').onclick=function(){location.href='slots.html';};
 $('#bBackB').onclick=function(){show('menu');};
 $('#bShiny').onclick=function(){DEXSH=!DEXSH;renderDex();$('#dexscroll').scrollTop=0;};
 $('#bSnd').onclick=function(){SOUND=SOUND?0:1;lsSet('duel-de-poche-sound',SOUND);unlockAudio();applyMusic();renderMenu();if(SOUND)beep(660,0.1,'square',0.05);};
