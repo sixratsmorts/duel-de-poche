@@ -1,0 +1,894 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Duel de Poche">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:#17122b}body{margin:0}</style>
+<title>Duel de Poche</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Mise en page : trois bandes face à face. Zone Joueur 2 retournée à 180° en haut, arène au centre, zone Joueur 1 en bas. Look unique, sombre, console de poche. */
+:root{
+  --bg:#17122b; --surface:#241c45; --surface2:#31275c; --line:#4b3f8a;
+  --ink:#f5efe0; --mute:#a99fd0; --p1:#ffc93c; --p2:#38e0c0;
+  --good:#6ee06a; --warn:#ffb13c; --bad:#ff6a5e; --gold:#ffe27a;
+  --font-d:'Press Start 2P', ui-monospace, Menlo, monospace;
+  --font-b:'Pixelify Sans', ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:14px;line-height:1.25;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;overflow:hidden}
+img{image-rendering:crisp-edges;image-rendering:pixelated}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+#app{position:relative;height:100%}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;min-width:0}
+
+.btn{font-family:var(--font-d);font-size:10px;letter-spacing:.03em;line-height:1.4;padding:11px 14px;background:var(--ink);color:#1c1530;border:0;border-radius:4px;box-shadow:0 4px 0 #8d84b8}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #8d84b8}
+.btn.alt{background:var(--surface2);color:var(--ink);box-shadow:0 4px 0 #120e24}
+.btn:disabled{opacity:.35;transform:none}
+.p1 .btn.go{background:var(--p1);box-shadow:0 4px 0 #a8801a}
+.p2 .btn.go{background:var(--p2);box-shadow:0 4px 0 #1b8f7b}
+
+/* Menu */
+#menu{align-items:center;justify-content:center;gap:18px;text-align:center}
+#menu h1{margin:0;font-family:var(--font-d);font-size:22px;line-height:1.5;color:var(--gold);text-shadow:3px 3px 0 #6a3fbf;text-wrap:balance}
+.hero{display:flex;gap:6px;justify-content:center}
+.hero img{width:clamp(52px,17vw,72px);height:clamp(52px,17vw,72px)}
+.menubtns{display:flex;flex-direction:column;gap:14px;width:min(320px,100%)}
+.rules{margin:0;padding:0;list-style:none;max-width:330px;text-align:left;color:var(--mute);font-size:14px;display:flex;flex-direction:column;gap:6px}
+.rules b{color:var(--ink);font-weight:600}
+.note{font-size:12px;color:var(--mute);max-width:330px}
+
+/* Zones joueur */
+.zone{position:relative;flex:1 1 0;min-height:0;display:flex;flex-direction:column;gap:6px;padding:8px 0 6px}
+.zone.p2{transform:rotate(180deg)}
+.p1{--pc:var(--p1)} .p2{--pc:var(--p2)}
+.zhead{display:flex;align-items:center;gap:8px;min-height:22px}
+.pname{font-family:var(--font-d);font-size:9px;color:var(--pc)}
+.zscore{font-family:var(--font-d);font-size:12px;background:var(--surface);padding:3px 6px;border-radius:3px}
+.zstat{margin-left:auto;font-size:13px;color:var(--mute)}
+.zone.active .zstat{color:var(--ink);animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:.35}}
+.grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:6px}
+.stl{font-size:9px;color:var(--mute);white-space:nowrap}
+.card{position:relative;display:grid;grid-template-rows:minmax(0,1fr) auto auto auto;justify-items:center;gap:1px;padding:3px 2px;min-height:0;min-width:0;background:var(--surface);border:2px solid var(--line);border-radius:6px;overflow:hidden}
+.card.sel{border-color:var(--pc);box-shadow:0 0 0 2px var(--pc) inset}
+.card.picked{border-color:var(--pc);background:var(--surface2)}
+.card.used{opacity:.4;filter:grayscale(.8)}
+.card.shiny{background:linear-gradient(160deg,#3b2f72,#52391f)}
+.sprwrap{position:relative;width:100%;min-height:0;overflow:hidden}
+.sprwrap img{position:absolute;top:0;bottom:0;left:50%;height:100%;aspect-ratio:1;transform:translateX(-50%)}
+.star{position:absolute;top:0;right:3px;color:var(--gold);font-size:13px;line-height:1}
+.nm{font-size:12px;font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.atts{display:flex;gap:2px}
+.chip{font-style:normal;font-size:9px;font-weight:700;padding:1px 3px;border-radius:2px;white-space:nowrap}
+.mark{position:absolute;top:2px;left:3px;font-family:var(--font-d);font-size:9px;padding:2px 3px;border-radius:2px;background:#0d0a1c;color:var(--ink)}
+.mark.w{color:var(--good)} .mark.l{color:var(--bad)}
+
+/* Arène */
+#arena{flex:none;height:182px;display:flex;flex-direction:column;border:2px solid var(--line);border-radius:6px;overflow:hidden;
+  background:repeating-conic-gradient(#1f1840 0 25%,#1a1436 0 50%) 0 0/16px 16px}
+.fighter{flex:1;min-height:0;display:flex;align-items:center;gap:10px;padding:4px 8px}
+.fighter.top{transform:rotate(180deg)}
+.fslot{position:relative;flex:none;height:100%;aspect-ratio:1}
+.fslot img{width:100%;height:100%;display:block}
+.fslot.empty{border:2px dashed var(--line);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);color:var(--mute)}
+.finfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.fname{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fname.dim{color:var(--mute);font-weight:400;font-size:13px}
+.hpbar{height:9px;background:#0d0a1c;border:1px solid var(--line);border-radius:2px;overflow:hidden}
+.hpfill{height:100%;width:100%;background:var(--good);transition:width .4s steps(8),background .2s}
+.hptxt{font-size:11px;color:var(--mute)}
+.mid{flex:none;height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:rgba(13,10,28,.65);border-block:1px solid var(--line);position:relative}
+.log{font-size:11px;line-height:1.15;text-align:center;height:24px;width:100%;padding:0 6px;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.log.rot{transform:rotate(180deg)}
+.log .sub{color:var(--mute)}
+.rounds{display:flex;gap:5px}
+.dot{width:10px;height:10px;border-radius:2px;background:#3a3070;border:1px solid #0d0a1c}
+.dot.w0{background:var(--p1)} .dot.w1{background:var(--p2)}
+.dot.cur{outline:2px solid var(--ink);outline-offset:1px}
+.quit{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:10px;padding:3px 5px;background:var(--surface2);border:1px solid var(--line);border-radius:3px;color:var(--mute)}
+@keyframes lunge{0%{transform:translateY(0)}40%{transform:translateY(-14px)}100%{transform:translateY(0)}}
+@keyframes hit{0%,100%{transform:translateX(0);filter:brightness(1)}20%{transform:translateX(-6px);filter:brightness(2.2)}40%{transform:translateX(6px)}60%{transform:translateX(-4px);filter:brightness(2.2)}80%{transform:translateX(3px)}}
+@keyframes pop{0%{transform:scale(.4);filter:brightness(3)}60%{transform:scale(1.25);filter:brightness(1.4)}100%{transform:scale(1);filter:brightness(1)}}
+.pop{animation:pop .6s ease-out}
+.spin img{filter:saturate(1.5) contrast(1.15)}
+.lunge{animation:lunge .32s ease-out}
+.hit{animation:hit .42s linear}
+.ko{opacity:.25;filter:grayscale(1);transform:translateY(6px);transition:all .5s}
+
+/* Pokédex */
+#dex{gap:8px}
+.dhead{display:flex;align-items:center;gap:10px;padding-top:10px;flex-wrap:wrap}
+.dhead h2{margin:0;font-family:var(--font-d);font-size:13px;color:var(--gold)}
+.dcount{margin-left:auto;font-size:13px;color:var(--mute)}
+.dbar{height:8px;background:#0d0a1c;border:1px solid var(--line);border-radius:2px;overflow:hidden}
+.dbar i{display:block;height:100%;background:var(--gold)}
+#dexscroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px}
+#dexgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px}
+.dcell{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px 4px;background:var(--surface);border:2px solid var(--line);border-radius:6px;min-width:0}
+.dcell img{width:56px;height:56px}
+.dcell.unseen img{filter:brightness(0) opacity(.35)}
+.dcell .no{font-size:10px;color:var(--mute)}
+.dcell .nm{font-size:12px}
+.dcell .star{top:2px;right:4px}
+
+/* Tirage façon machine à sous */
+.reelpad{height:36px;flex:none}
+.card.reel{cursor:default}
+.strip{position:absolute;left:0;right:0;top:0;height:1000%;display:flex;flex-direction:column;will-change:transform}
+.si{flex:none;height:10%;display:flex;justify-content:center}
+.sprwrap .strip img{position:static;transform:none;left:auto;top:auto;bottom:auto;height:100%;width:auto;aspect-ratio:1}
+.card.spinning .strip{filter:blur(.7px) saturate(1.3)}
+.card.reel .nm,.card.reel .stl,.card.reel .atts,.card.reel .star{opacity:0;transition:opacity .25s}
+.card.reel.landed .nm,.card.reel.landed .stl,.card.reel.landed .atts,.card.reel.landed .star{opacity:1}
+@keyframes thud{0%{transform:translateY(-7%)}55%{transform:translateY(4%)}100%{transform:none}}
+.thud{animation:thud .35s ease-out}
+.card.reel.landed.shiny{border-color:var(--gold);animation:goldpulse .5s ease-in-out 4}
+@keyframes goldpulse{50%{box-shadow:0 0 14px 4px var(--gold)}}
+.jp{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 50%,rgba(255,226,122,.45),rgba(23,18,43,.6) 75%);animation:jpin .25s ease-out;transition:opacity .4s}
+.jp.out{opacity:0}
+.jpbox{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:0 8px;animation:jpbounce .6s ease-in-out infinite alternate}
+.jpbox b{font-family:var(--font-d);font-size:22px;letter-spacing:.05em;background:linear-gradient(90deg,#ffe27a,#ff6a5e,#38e0c0,#ffe27a);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:jpshine .7s linear infinite;filter:drop-shadow(0 2px 0 #6a3fbf)}
+.jpbox span{font-size:15px;font-weight:700;color:var(--gold);text-shadow:0 2px 0 #0d0a1c}
+.conf i{position:absolute;top:-10px;width:7px;height:7px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(360px) rotate(540deg)}}
+@keyframes jpshine{to{background-position:200% 0}}
+@keyframes jpbounce{from{transform:scale(1)}to{transform:scale(1.12)}}
+@keyframes jpin{from{opacity:0}to{opacity:1}}
+.sheet .sub{color:var(--mute);font-size:14px}
+
+/* Fenêtres */
+#modal{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(10,7,24,.86)}
+.sheet{width:min(360px,100%);background:var(--surface);border:2px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;max-height:100%;overflow:auto}
+.sheet h3{margin:0;font-family:var(--font-d);font-size:12px;line-height:1.5;color:var(--gold)}
+.pair{display:flex;gap:10px;justify-content:center}
+.pair figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--mute)}
+.pair img{width:96px;height:96px;background:var(--surface2);border-radius:6px}
+.pair .lock img{filter:brightness(0) opacity(.3)}
+.types{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.types .chip{font-size:12px;padding:2px 6px}
+.fwr{display:flex;flex-direction:column;gap:4px;font-size:14px}
+.fwr div{display:flex;gap:8px;align-items:center}
+.srows{display:flex;flex-direction:column;gap:3px;font-size:13px}
+.srow{display:grid;grid-template-columns:76px 30px 1fr 58px;gap:6px;align-items:center}
+.srow span:first-child{color:var(--mute)}
+.srow b{text-align:right;font-weight:600}
+.srow .lv{text-align:right;color:var(--mute);font-size:12px}
+.bw{height:6px;background:#0d0a1c;border-radius:2px;overflow:hidden}
+.bw i{display:block;height:100%;background:var(--gold)}
+.sleg{font-size:11px;color:var(--mute);text-align:right}
+.moves{display:flex;flex-wrap:wrap;gap:4px}
+.moves .chip{font-size:11px;padding:2px 5px}
+#endwrap{position:absolute;inset:0;z-index:15;display:flex;flex-direction:column;background:rgba(14,10,30,.95)}
+.endhalf{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:12px}
+.endhalf.rot{transform:rotate(180deg)}
+.endhalf h2{margin:0;font-family:var(--font-d);font-size:16px;line-height:1.5;color:var(--gold);text-wrap:balance}
+.endhalf .big{font-family:var(--font-d);font-size:26px}
+.endhalf .sub{color:var(--mute);font-size:14px}
+.endbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:10px;border-block:2px solid var(--line);background:var(--surface)}
+.endbtns .btn{font-size:9px;padding:10px 10px}
+
+@media (prefers-reduced-motion:reduce){
+  .zone.active .zstat{animation:none}
+  .lunge,.hit,.pop,.thud,.jp,.jpbox,.jpbox b,.conf i,.card.landed.shiny{animation:none}
+  .hpfill{transition:none}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <section id="menu" class="screen">
+    <h1>DUEL<br>DE POCHE</h1>
+    <div class="hero" id="hero"></div>
+    <div class="menubtns">
+      <button class="btn" id="bPlay">Jouer à deux</button>
+      <button class="btn alt" id="bDex">Pokédex</button>
+      <button class="btn alt" id="bSnd">Son : oui</button>
+    </div>
+    <ul class="rules">
+      <li><b>6 Pokémon</b> tirés au hasard pour chacun. Posez l'écran à plat, Joueur 2 en haut.</li>
+      <li><b>6 manches.</b> On choisit à tour de rôle, le premier change à chaque manche. Le combat est automatique. En cas d'égalité 3–3, chacun tire un Pokémon au hasard pour une manche décisive.</li>
+      <li><b>Niveau 50</b> pour tous, avec les vraies stats de base et des IV tirés de 0 à 31. Sur chaque carte : PV, meilleure attaque (A), vitesse (V). Le plus rapide attaque en premier, avec une capacité offensive tirée au hasard parmi les siennes.</li>
+      <li><b>▲ Force</b> inflige ×1,5 à ce type. <b>▼ Faiblesse</b> subit ×1,5 de ce type. <b>◆ Résistance</b> subit ×0,67.</li>
+    </ul>
+    <div class="note">Tous les Pokémon, leurs stats, leurs capacités et leurs sprites viennent de PokéAPI : connexion requise.</div>
+  </section>
+
+  <section id="game" class="screen" hidden>
+    <div class="zone p2" id="z1"></div>
+    <div id="arena">
+      <div class="fighter top" id="f1"></div>
+      <div class="mid">
+        <div class="log rot" id="logTop"></div>
+        <div class="rounds" id="rounds"></div>
+        <div class="log" id="logBot"></div>
+        <button class="quit" id="bQuit">Menu</button>
+      </div>
+      <div class="fighter" id="f0"></div>
+    </div>
+    <div class="zone p1" id="z0"></div>
+  </section>
+
+  <section id="dex" class="screen" hidden>
+    <div class="dhead">
+      <button class="btn alt" id="bBack">Retour</button>
+      <h2>POKÉDEX</h2>
+      <span class="dcount" id="dcount"></span>
+    </div>
+    <div class="dbar"><i id="dbar"></i></div>
+    <div id="dexscroll"><div id="dexgrid"></div></div>
+  </section>
+
+  <div id="modal" hidden></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- Types et table d'efficacité ---------- */
+var T={
+  no:['Normal','Nor','#a8a878'], fi:['Feu','Feu','#f08030'], wa:['Eau','Eau','#6890f0'],
+  el:['Électrik','Éle','#f8d030'], gr:['Plante','Pla','#78c850'], ic:['Glace','Gla','#98d8d8'],
+  fg:['Combat','Com','#c03028'], po:['Poison','Poi','#a040a0'], gd:['Sol','Sol','#e0c068'],
+  fl:['Vol','Vol','#a890f0'], ps:['Psy','Psy','#f85888'], bu:['Insecte','Ins','#a8b820'],
+  ro:['Roche','Roc','#b8a038'], gh:['Spectre','Spe','#705898'], dr:['Dragon','Dra','#7038f8'],
+  da:['Ténèbres','Tén','#705848'], st:['Acier','Aci','#b8b8d0'], fa:['Fée','Fée','#ee99ac']
+};
+var CH={
+  no:[[],['ro','st'],['gh']], fi:[['gr','ic','bu','st'],['fi','wa','ro','dr'],[]],
+  wa:[['fi','gd','ro'],['wa','gr','dr'],[]], el:[['wa','fl'],['el','gr','dr'],['gd']],
+  gr:[['wa','gd','ro'],['fi','gr','po','fl','bu','dr','st'],[]], ic:[['gr','gd','fl','dr'],['fi','wa','ic','st'],[]],
+  fg:[['no','ic','ro','da','st'],['po','fl','ps','bu','fa'],['gh']], po:[['gr','fa'],['po','gd','ro','gh'],['st']],
+  gd:[['fi','el','po','ro','st'],['gr','bu'],['fl']], fl:[['gr','fg','bu'],['el','ro','st'],[]],
+  ps:[['fg','po'],['ps','st'],['da']], bu:[['gr','ps','da'],['fi','fg','po','fl','gh','st','fa'],[]],
+  ro:[['fi','ic','fl','bu'],['fg','gd','st'],[]], gh:[['ps','gh'],['da'],['no']],
+  dr:[['dr'],['st'],['fa']], da:[['ps','gh'],['fg','da','fa'],[]],
+  st:[['ic','ro','fa'],['fi','wa','el','st'],[]], fa:[['fg','dr','da'],['fi','po','st'],[]]
+};
+function eff(a,defTypes){
+  var m=1;
+  for(var i=0;i<defTypes.length;i++){
+    var c=CH[a], d=defTypes[i];
+    if(c[0].indexOf(d)>-1) m*=2; else if(c[1].indexOf(d)>-1) m*=0.5; else if(c[2].indexOf(d)>-1) m=0;
+  }
+  return m;
+}
+var TYPE_CODE={normal:'no',fire:'fi',water:'wa',electric:'el',grass:'gr',ice:'ic',fighting:'fg',poison:'po',ground:'gd',flying:'fl',psychic:'ps',bug:'bu',rock:'ro',ghost:'gh',dragon:'dr',dark:'da',steel:'st',fairy:'fa'};
+
+/* ---------- Niveau 50, IV, chromatiques ---------- */
+var LV=50; /* tous les Pokémon sont de niveau 50, sans EV, nature neutre */
+var SKEYS=['hp','atk','def','spa','spd','spe'];
+function calc(base,iv){
+  var o={};
+  for(var i=0;i<6;i++) o[SKEYS[i]]=Math.floor((2*base[i]+iv[i])*LV/100)+(i===0?LV+10:5);
+  return o;
+}
+var SHINY_RATE=1/40;
+
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+/* Force, faiblesse et résistance : fixes pour chaque Pokémon, choisies d'après ses types */
+function derive(id,types){
+  var r=rng(id*7919+13), all=Object.keys(T);
+  var force=[]; types.forEach(function(t){CH[t][0].forEach(function(x){if(force.indexOf(x)<0)force.push(x);});});
+  if(!force.length) force=all.filter(function(t){return types.indexOf(t)<0;});
+  var weak=all.filter(function(a){return eff(a,types)>1;});
+  if(!weak.length) weak=all.filter(function(a){return types.indexOf(a)<0;});
+  var res=all.filter(function(a){return eff(a,types)<1;});
+  if(!res.length) res=types.slice();
+  function pick(l){return l[Math.floor(r()*l.length)];}
+  return {force:pick(force),weak:pick(weak),res:pick(res)};
+}
+
+/* ---------- Utilitaires ---------- */
+function $(s){return document.querySelector(s);}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function count(o){return Object.keys(o).length;}
+function lsGet(k,def){try{var s=localStorage.getItem(k);return s?JSON.parse(s):def;}catch(e){return def;}}
+var lsTimers={};
+function lsSet(k,v){clearTimeout(lsTimers[k]);lsTimers[k]=setTimeout(function(){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},400);}
+
+/* ---------- Sprites provisoires (pixel art 16×16 généré) ---------- */
+var SPR={};
+function hex2hsl(hex){
+  var r=parseInt(hex.slice(1,3),16)/255,g=parseInt(hex.slice(3,5),16)/255,b=parseInt(hex.slice(5,7),16)/255;
+  var mx=Math.max(r,g,b),mn=Math.min(r,g,b),h=0,s=0,l=(mx+mn)/2,d=mx-mn;
+  if(d){s=l>.5?d/(2-mx-mn):d/(mx+mn);
+    if(mx===r)h=(g-b)/d+(g<b?6:0);else if(mx===g)h=(b-r)/d+2;else h=(r-g)/d+4;h*=60;}
+  return [h,s*100,l*100];
+}
+function pal(p,shiny){
+  var a=hex2hsl(T[p.types[0]][2]), h1=a[0],s1=a[1],l1=a[2], h2,s2,l2;
+  if(p.types[1]){var b=hex2hsl(T[p.types[1]][2]);h2=b[0];s2=b[1];l2=b[2];}
+  else{h2=(h1+35)%360;s2=s1;l2=Math.max(25,l1-20);}
+  var sh=shiny?150:0;
+  function c(h,s,l){return 'hsl('+((h+sh)%360)+' '+Math.round(s)+'% '+Math.round(l)+'%)';}
+  return {base:c(h1,s1,l1),hi:c(h1,s1,Math.min(88,l1+12)),lo:c(h1,s1,Math.max(14,l1-16)),
+    acc:c(h2,s2,l2),accLo:c(h2,s2,Math.max(14,l2-14)),belly:c(h1,s1*.45,84)};
+}
+function makeSprite(p,shiny){
+  var key=p.id+(shiny?'s':''); if(SPR[key]) return SPR[key];
+  var r=rng(p.id*1013+77), W=16, H=16, x, y, k;
+  var bRx=3.2+r()*2.8, bRy=2.8+r()*2.4, bCy=9.4+r()*1.2;
+  var hR=1.9+r()*1.5, hCy=Math.max(hR+1.6,bCy-bRy-hR*0.35);
+  var half=[]; for(y=0;y<H;y++){half[y]=[0,0,0,0,0,0,0,0];}
+  for(y=0;y<H;y++){for(x=0;x<8;x++){
+    var dx=7.5-x;
+    var inB=(dx/bRx)*(dx/bRx)+((y-bCy)/bRy)*((y-bCy)/bRy)<1;
+    var inH=(dx/hR)*(dx/hR)+((y-hCy)/(hR*0.95))*((y-hCy)/(hR*0.95))<1;
+    if(inB||inH) half[y][x]=1;
+    if(inB&&dx<bRx*0.45&&y>bCy-1&&y<bCy+bRy*0.7) half[y][x]=3;
+  }}
+  function put(xx,yy,v){if(xx>=0&&xx<8&&yy>=0&&yy<H) half[yy][xx]=v;}
+  if(r()<0.7){var eh=2+Math.floor(r()*3), ed=hR*0.55+r()*0.6;
+    for(k=1;k<=eh;k++){var ey0=Math.round(hCy-hR)-k+1;put(Math.round(7.5-ed),ey0,2);if(k<eh)put(Math.round(7.5-ed)+1,ey0,2);}}
+  if(r()<0.8){var al=1+Math.floor(r()*2), ay=Math.round(bCy-bRy*0.2);
+    for(k=0;k<=al;k++){put(Math.round(7.5-(bRx+k)),ay,2);if(k===al)put(Math.round(7.5-(bRx+k)),ay-1,2);}}
+  var fy=Math.min(H-2,Math.floor(bCy+bRy));
+  put(Math.round(7.5-bRx*0.55),fy+1,2);put(Math.round(7.5-bRx*0.55)+1,fy+1,2);
+  if(r()<0.4){put(7,Math.floor(hCy-hR)-1,2);put(7,Math.floor(hCy-hR)-2,2);}
+  if(p.types.indexOf('fl')>-1){for(k=-2;k<=1;k++){put(Math.round(7.5-(bRx+1)),Math.round(bCy)+k,2);put(Math.round(7.5-(bRx+2)),Math.round(bCy)+k-1,2);}}
+  var pat=Math.floor(r()*3);
+  for(y=0;y<H;y++){for(x=0;x<8;x++){
+    if(half[y][x]===1){
+      if(pat===1&&y%3===0&&7.5-x>1) half[y][x]=5;
+      else if(pat===2&&r()<0.14) half[y][x]=2;
+    }}}
+  var ex=Math.max(1,Math.round(7.5-(1.3+hR*0.35))), ey=Math.round(hCy-0.2);
+  half[ey][ex]=4;
+  var F=[]; for(y=0;y<H;y++){F[y]=[];for(x=0;x<W;x++){F[y][x]=half[y][x<8?x:15-x];}}
+  var P=pal(p,shiny), OL='#15102a', EYE='#181224';
+  var cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  var cx=cv.getContext('2d');
+  function filled(xx,yy){return yy>=0&&yy<H&&xx>=0&&xx<W&&F[yy][xx]!==0;}
+  for(y=0;y<H;y++){for(x=0;x<W;x++){
+    var v=F[y][x], col=null;
+    if(v===0){ if(filled(x-1,y)||filled(x+1,y)||filled(x,y-1)||filled(x,y+1)) col=OL; }
+    else if(v===1){ col=!filled(x,y-1)?P.hi:(!filled(x,y+1)?P.lo:P.base); }
+    else if(v===2) col=P.acc; else if(v===3) col=P.belly; else if(v===4) col=EYE; else if(v===5) col=P.accLo;
+    if(col){cx.fillStyle=col;cx.fillRect(x,y,1,1);}
+  }}
+  SPR[key]=cv.toDataURL();
+  return SPR[key];
+}
+/* Sprites hébergés en ligne (dépôt public PokéAPI/sprites), chargés à l'exécution sur l'appareil.
+   Pixel art Gen. 5 pour les n°1 à 649, sprites par défaut au-delà. Repli : sprite provisoire généré. */
+var SPR_BASE='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
+function spriteURL(id,shiny){
+  return SPR_BASE+(id<=649?'versions/generation-v/black-white/':'')+(shiny?'shiny/':'')+id+'.png';
+}
+window.__fb=function(el,id,shiny){el.onerror=null;el.src=makeSprite(FB(id),shiny);};
+function setSpr(el,m,shiny){
+  el.onerror=function(){el.onerror=null;el.src=makeSprite(m,shiny);};
+  el.src=spriteURL(m.id,shiny);
+}
+function img(m,shiny){return '<img alt="" src="'+spriteURL(m.id,shiny)+'" onerror="__fb(this,'+m.id+','+(shiny?'true':'false')+')">';}
+
+
+
+/* ---------- Données : PokéAPI (https://pokeapi.co) ---------- */
+/*DATA-START*/
+var API='https://pokeapi.co/api/v2/', N=1025;
+var MONC=lsGet('duel-de-poche-mons-v2',{}), MVC=lsGet('duel-de-poche-moves-v2',{}), NAMEC=lsGet('duel-de-poche-names-v2',{});
+function FB(id){return MONC[id]||{id:id,types:['no']};}
+function jget(url){return fetch(url).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();});}
+/* exécute les tâches avec au plus `limit` requêtes simultanées */
+function pool(tasks,limit){
+  return new Promise(function(resolve,reject){
+    var res=new Array(tasks.length), i=0, done=0, failed=false;
+    if(!tasks.length){resolve(res);return;}
+    function next(){
+      if(failed||i>=tasks.length) return;
+      var k=i++;
+      tasks[k]().then(function(v){res[k]=v;done++;if(done===tasks.length)resolve(res);else next();},function(e){failed=true;reject(e);});
+    }
+    for(var j=0;j<Math.min(limit,tasks.length);j++) next();
+  });
+}
+function frName(o){
+  var f=(o.names||[]).filter(function(n){return n.language&&n.language.name==='fr';})[0];
+  return f?f.name:cap(String(o.name).replace(/-/g,' '));
+}
+/* capacité : renvoyée seulement si elle inflige des dégâts (puissance connue, physique ou spéciale) */
+function getMove(slug){
+  if(Object.prototype.hasOwnProperty.call(MVC,slug)) return Promise.resolve(MVC[slug]||null);
+  return jget(API+'move/'+slug).then(function(m){
+    var code=TYPE_CODE[m.type&&m.type.name], cls=m.damage_class&&m.damage_class.name;
+    var ok=m.power&&m.power>0&&m.power<=150&&code&&(cls==='physical'||cls==='special');
+    var rec=ok?{n:frName(m),t:code,c:cls==='physical'?'P':'S',p:m.power}:0;
+    MVC[slug]=rec; lsSet('duel-de-poche-moves-v2',MVC);
+    return rec||null;
+  },function(){return null;});
+}
+function getName(id){
+  if(NAMEC[id]) return Promise.resolve(NAMEC[id]);
+  return jget(API+'pokemon-species/'+id).then(function(sp){
+    NAMEC[id]=frName(sp); lsSet('duel-de-poche-names-v2',NAMEC); return NAMEC[id];
+  });
+}
+/* fiche complète d'un Pokémon : nom français, types, stats de base, 4 capacités offensives */
+function getMon(id){
+  if(MONC[id]) return Promise.resolve(MONC[id]);
+  return Promise.all([jget(API+'pokemon/'+id),jget(API+'pokemon-species/'+id)]).then(function(r){
+    var p=r[0], sp=r[1], types=[];
+    p.types.slice().sort(function(a,b){return a.slot-b.slot;}).forEach(function(t){var c=TYPE_CODE[t.type.name];if(c)types.push(c);});
+    if(!types.length) types=['no'];
+    var idx={'hp':0,'attack':1,'defense':2,'special-attack':3,'special-defense':4,'speed':5}, base=[50,50,50,50,50,50];
+    p.stats.forEach(function(s){if(Object.prototype.hasOwnProperty.call(idx,s.stat.name))base[idx[s.stat.name]]=s.base_stat;});
+    var name=frName(sp);
+    var slugs=shuffle(p.moves.map(function(m){return m.move.name;})).slice(0,18);
+    return pool(slugs.map(function(s){return function(){return getMove(s);};}),8).then(function(ms){
+      var best=ms.filter(Boolean).map(function(m){
+        return {m:m,s:m.p*(types.indexOf(m.t)>-1?1.5:1)+Math.random()*12};
+      }).sort(function(a,b){return b.s-a.s;}).slice(0,4).map(function(x){return x.m;});
+      if(!best.length) best=[{n:'Charge',t:'no',c:'P',p:40}];
+      var rec={id:id,name:name,types:types,base:base,moves:best};
+      MONC[id]=rec; NAMEC[id]=name;
+      lsSet('duel-de-poche-mons-v2',MONC); lsSet('duel-de-poche-names-v2',NAMEC);
+      return rec;
+    });
+  });
+}
+function randomIds(n,exclude){
+  var out=[], seen={};
+  while(out.length<n){
+    var id=1+Math.floor(Math.random()*N);
+    if(seen[id]||(exclude&&exclude[id])) continue;
+    seen[id]=1; out.push(id);
+  }
+  return out;
+}
+function initN(){
+  var c=lsGet('duel-de-poche-n',0); if(c>0) N=c;
+  return jget(API+'pokemon-species?limit=1').then(function(d){
+    if(d&&d.count>0){N=d.count;lsSet('duel-de-poche-n',N);}
+  }).catch(function(){});
+}
+/*DATA-END*/
+initN();
+
+/* ---------- Pokédex (stockage local, par appareil) ---------- */
+var KEY='duel-de-poche-dex-v1';
+var DEX={seen:{},shiny:{},games:0,wins:[0,0],ties:0};
+try{var sv=localStorage.getItem(KEY); if(sv) DEX=Object.assign(DEX,JSON.parse(sv));}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(DEX));}catch(e){}}
+
+/* ---------- Son (WebAudio, activable) ---------- */
+var SOUND=lsGet('duel-de-poche-sound',1), AC=null;
+function unlockAudio(){
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume();}catch(e){}
+}
+function beep(freq,dur,type,vol,when){
+  if(!SOUND||!AC) return;
+  try{
+    var t=AC.currentTime+(when||0), o=AC.createOscillator(), g=AC.createGain();
+    o.type=type||'square'; o.frequency.value=freq;
+    g.gain.setValueAtTime(vol||0.05,t); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t+dur+0.02);
+  }catch(e){}
+}
+
+/* ---------- Utilitaires d'affichage ---------- */
+var G=null;
+function sleep(ms){return new Promise(function(res){setTimeout(res,(G&&G.fast)?Math.min(ms,110):ms);});}
+function chip(t,sym){
+  var h=hex2hsl(T[t][2]);
+  return '<i class="chip" style="background:'+T[t][2]+';color:'+(h[2]>58?'#1c1530':'#fff')+'">'+(sym||'')+T[t][1]+'</i>';
+}
+function chipFull(t){
+  var h=hex2hsl(T[t][2]);
+  return '<i class="chip" style="background:'+T[t][2]+';color:'+(h[2]>58?'#1c1530':'#fff')+'">'+T[t][0]+'</i>';
+}
+function anim(el,cls){if(!el)return;el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);}
+function preload(urls,timeout){
+  return new Promise(function(res){
+    var left=urls.length, fin=false;
+    function done(){if(!fin){fin=true;res();}}
+    if(!left){done();return;}
+    urls.forEach(function(u){var im=new Image();im.onload=im.onerror=function(){if(--left<=0)done();};im.src=u;});
+    setTimeout(done,timeout);
+  });
+}
+
+/* ---------- Navigation ---------- */
+function show(id){
+  var s=document.querySelectorAll('.screen');
+  for(var i=0;i<s.length;i++) s[i].hidden=(s[i].id!==id);
+  closeModal();
+  if(id==='menu') renderMenu();
+  if(id==='dex') renderDex();
+}
+function showModal(html){var m=$('#modal');m.innerHTML=html;m.hidden=false;}
+function closeModal(){var m=$('#modal');m.hidden=true;m.innerHTML='';var e=$('#endwrap');if(e)e.remove();}
+
+/* ---------- Menu ---------- */
+var HERO=[{id:25,types:['el']},{id:6,types:['fi','fl']},{id:133,types:['no']},{id:150,types:['ps']}];
+function renderMenu(){
+  var h=''; HERO.forEach(function(m,i){h+=img(m,i===1);});
+  $('#hero').innerHTML=h;
+  $('#bDex').textContent='Pokédex '+count(DEX.seen)+'/'+N;
+  $('#bSnd').textContent='Son : '+(SOUND?'oui':'non');
+}
+
+/* ---------- Partie ---------- */
+function makeMon(rec){
+  var m=Object.assign({},rec,derive(rec.id,rec.types),{shiny:Math.random()<SHINY_RATE});
+  m.iv=[0,0,0,0,0,0].map(function(){return Math.floor(Math.random()*32);}); /* IV tirés de 0 à 31 */
+  m.st=calc(m.base,m.iv); m.hp=m.st.hp;
+  return m;
+}
+async function startGame(){
+  unlockAudio();
+  var cancelled=false, total=12, done=0;
+  showModal('<div class="sheet" id="lsheet"><h3>Tirage au sort</h3><div class="sub">Distribution des Pokémon…</div><div class="dbar"><i id="lprog" style="width:0%"></i></div><button class="btn alt" id="lcancel">Annuler</button></div>');
+  $('#lcancel').onclick=function(){cancelled=true;closeModal();};
+  var recs;
+  try{
+    recs=await pool(randomIds(total).map(function(id){
+      return function(){return getMon(id).then(function(r){
+        done++; var b=$('#lprog'); if(b) b.style.width=Math.round(done/total*100)+'%';
+        return r;
+      });};
+    }),4);
+  }catch(e){
+    if(cancelled) return;
+    showModal('<div class="sheet" id="lsheet"><h3>Connexion impossible</h3><div class="sub">Les Pokémon, leurs stats et leurs sprites viennent de PokéAPI. Vérifie ta connexion.</div><button class="btn" id="lretry">Réessayer</button><button class="btn alt" id="lback">Retour</button></div>');
+    $('#lretry').onclick=startGame; $('#lback').onclick=closeModal;
+    return;
+  }
+  if(cancelled) return;
+  closeModal();
+  newGame(recs);
+}
+function newGame(recs){
+  var ms=recs.map(makeMon), hands=[ms.slice(0,6),ms.slice(6)], fresh=0;
+  hands.forEach(function(h){h.forEach(function(m){
+    if(!DEX.seen[m.id]){DEX.seen[m.id]=1;fresh++;}
+    if(m.shiny) DEX.shiny[m.id]=1;
+  });});
+  DEX.games++; save();
+  G={hands:hands,score:[0,0],round:0,first:0,turn:-1,picks:[null,null],sel:null,
+     used:[{},{}],roundRes:[],phase:'draw',fresh:fresh,token:{},fast:false,hp:null,quitArm:false,tb:null};
+  show('game');
+  runDraw();
+}
+function renderAll(){renderZone(0);renderZone(1);renderFighters();renderRounds();renderPickLog();}
+
+/* Tirage façon machine à sous : un rouleau par carte, arrêt en cascade, jackpot pour un chromatique */
+function imgd(id){return '<img alt="" src="'+spriteURL(id,false)+'" onerror="__fb(this,'+id+',false)">';}
+function reelCardHTML(m,pi,i,decoys){
+  var items='', k;
+  for(k=0;k<9;k++) items+='<span class="si">'+imgd(decoys[(i*3+k+pi*5)%decoys.length])+'</span>';
+  items+='<span class="si">'+img(m,m.shiny)+'</span>';
+  return '<div class="card reel" id="rc'+pi+'_'+i+'"><span class="sprwrap"><span class="strip" id="rs'+pi+'_'+i+'">'+items+'</span>'+(m.shiny?'<span class="star">✦</span>':'')+'</span>'+
+    '<span class="nm">'+esc(m.name)+'</span>'+
+    '<span class="stl">PV'+m.st.hp+' A'+Math.max(m.st.atk,m.st.spa)+' V'+m.st.spe+'</span>'+
+    '<span class="atts">'+chip(m.force,'▲')+chip(m.weak,'▼')+chip(m.res,'◆')+'</span></div>';
+}
+function jackpot(pi,m){
+  var z=$(pi===0?'#z0':'#z1'); if(!z) return;
+  var conf='', k;
+  for(k=0;k<30;k++){
+    conf+='<i style="left:'+Math.round(Math.random()*100)+'%;animation-delay:'+(Math.random()*0.9).toFixed(2)+'s;animation-duration:'+(1.1+Math.random()*1.1).toFixed(2)+'s;background:'+(k%3===0?'#fff':(k%3===1?'var(--gold)':'var(--p2)'))+'"></i>';
+  }
+  var o=document.createElement('div'); o.className='jp';
+  o.innerHTML='<div class="jpbox"><b>JACKPOT</b><span>✦ '+esc(m.name)+' chromatique ✦</span></div><div class="conf">'+conf+'</div>';
+  z.appendChild(o);
+  [523,659,784,1047,1319,1568].forEach(function(f,i){beep(f,0.16,'square',0.06,i*0.09);});
+  beep(1047,0.5,'triangle',0.05,0.6); beep(1319,0.5,'triangle',0.05,0.6);
+  setTimeout(function(){o.classList.add('out');},1900);
+  setTimeout(function(){if(o.parentNode)o.parentNode.removeChild(o);},2350);
+}
+async function runDraw(){
+  var token=G.token, any=false, maxT=0;
+  var reduce=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  setLog('Tirage au sort…','Les rouleaux tournent !');
+  renderFighters(); renderRounds();
+  var decoys=randomIds(24), urls=decoys.map(function(id){return spriteURL(id,false);});
+  G.hands.forEach(function(h){h.forEach(function(m){urls.push(spriteURL(m.id,m.shiny));});});
+  [0,1].forEach(function(pi){
+    var z=$(pi===0?'#z0':'#z1');
+    z.className='zone '+(pi===0?'p1':'p2');
+    z.innerHTML='<div class="zhead"><span class="pname">JOUEUR '+(pi+1)+'</span><span class="zscore">0</span><span class="zstat">Tirage…</span></div>'+
+      '<div class="grid">'+G.hands[pi].map(function(m,i){return reelCardHTML(m,pi,i,decoys);}).join('')+'</div><div class="reelpad"></div>';
+  });
+  await preload(urls,1600); if(!G||G.token!==token) return;
+  G.hands.forEach(function(h,pi){h.forEach(function(m,i){
+    var stop=reduce?(150+i*60):(950+i*230+pi*110);
+    if(stop>maxT) maxT=stop;
+    var strip=document.getElementById('rs'+pi+'_'+i), card=document.getElementById('rc'+pi+'_'+i);
+    if(!strip||!card) return;
+    if(!reduce) strip.style.transition='transform '+stop+'ms cubic-bezier(.2,.8,.2,1)';
+    card.classList.add('spinning');
+    requestAnimationFrame(function(){requestAnimationFrame(function(){strip.style.transform='translateY(-90%)';});});
+    setTimeout(function(){
+      if(!G||G.token!==token) return;
+      card.classList.remove('spinning'); card.classList.add('landed');
+      if(m.shiny) card.classList.add('shiny');
+      anim(card.querySelector('.sprwrap'),'thud');
+      beep(330+i*70+pi*20,0.08,'square',0.05);
+      if(m.shiny) jackpot(pi,m);
+    },stop+30);
+    if(m.shiny) any=true;
+  });});
+  await sleep(maxT+550+(any?2400:0)); if(!G||G.token!==token) return;
+  G.phase='pick'; G.turn=G.first; G.picks=[null,null]; G.sel=null;
+  renderAll();
+}
+
+function monOf(pi){return G.tb?G.tb[pi]:G.hands[pi][G.picks[pi]];}
+function cardHTML(m,pi,i){
+  var used=G.used[pi][i], picked=(G.picks[pi]===i&&!G.tb), sel=(G.turn===pi&&G.phase==='pick'&&G.sel===i);
+  var cls='card'+(used?' used':'')+(picked?' picked':'')+(sel?' sel':'')+(m.shiny?' shiny':'');
+  return '<button class="'+cls+'" data-p="'+pi+'" data-i="'+i+'"'+(used?' disabled':'')+'>'+
+    '<span class="sprwrap">'+img(m,m.shiny)+(m.shiny?'<span class="star">✦</span>':'')+'</span>'+
+    '<span class="nm">'+esc(m.name)+'</span>'+
+    '<span class="stl">PV'+m.st.hp+' A'+Math.max(m.st.atk,m.st.spa)+' V'+m.st.spe+'</span>'+
+    '<span class="atts">'+chip(m.force,'▲')+chip(m.weak,'▼')+chip(m.res,'◆')+'</span>'+
+    (used?'<b class="mark '+(used==='W'?'w':'l')+'">'+(used==='W'?'V':'D')+'</b>':'')+
+  '</button>';
+}
+function renderZone(pi){
+  var active=(G.phase==='pick'&&G.turn===pi);
+  var z=$(pi===0?'#z0':'#z1');
+  z.className='zone '+(pi===0?'p1':'p2')+(active?' active':'');
+  var stat=G.phase==='pick'?(active?'À toi de choisir':'Attends…'):'';
+  z.innerHTML='<div class="zhead"><span class="pname">JOUEUR '+(pi+1)+'</span><span class="zscore">'+G.score[pi]+'</span><span class="zstat">'+stat+'</span></div>'+
+    '<div class="grid">'+G.hands[pi].map(function(m,i){return cardHTML(m,pi,i);}).join('')+'</div>'+
+    '<button class="btn go" data-act="confirm" data-p="'+pi+'"'+((active&&G.sel!==null)?'':' disabled')+'>Valider</button>';
+}
+function fighterHTML(pi){
+  var idx=G.picks[pi];
+  if(idx===null) return '<div class="fslot empty"><span>?</span></div><div class="finfo"><div class="fname dim">'+(G.phase==='pick'?'En attente…':'')+'</div></div>';
+  var m=monOf(pi), hp=(G.phase==='battle'&&G.hp)?G.hp[pi]:m.hp, mx=m.hp;
+  var pct=Math.max(0,Math.round(hp/mx*100));
+  return '<div class="fslot" id="img'+pi+'">'+img(m,m.shiny)+'</div>'+
+    '<div class="finfo"><div class="fname">'+esc(m.name)+(m.shiny?' ✦':'')+'</div>'+
+    '<div class="hpbar"><div class="hpfill" id="bar'+pi+'" style="width:'+pct+'%"></div></div>'+
+    '<div class="hptxt" id="hpt'+pi+'">PV '+Math.max(0,hp)+'/'+mx+' · Niv.'+LV+' · IV '+Math.round(m.iv.reduce(function(a,b){return a+b;},0)/186*100)+' %</div></div>';
+}
+function renderFighters(){$('#f0').innerHTML=fighterHTML(0);$('#f1').innerHTML=fighterHTML(1);}
+function renderRounds(){
+  var h='', nd=(G.round>=6||G.tb)?7:6;
+  for(var r=0;r<nd;r++){
+    var res=G.roundRes[r];
+    h+='<i class="dot'+(res===0?' w0':res===1?' w1':'')+((r===G.round&&G.phase!=='over'&&G.phase!=='draw')?' cur':'')+'"></i>';
+  }
+  $('#rounds').innerHTML=h;
+}
+function setLog(a,b){
+  var h='<div>'+a+'</div><div class="sub">'+(b||'')+'</div>';
+  $('#logTop').innerHTML=h;$('#logBot').innerHTML=h;
+}
+function renderPickLog(){
+  if(G.phase!=='pick') return;
+  setLog('Manche '+(G.round+1)+'/6 · Joueur '+(G.turn+1)+' choisit','▲ force · ▼ faiblesse · ◆ résistance');
+}
+
+function onZone(e){
+  var t=e.target.closest('button'); if(!t||!G) return;
+  var pi=+t.dataset.p;
+  if(G.phase!=='pick'||G.turn!==pi) return;
+  if(t.dataset.act==='confirm'){if(G.sel!==null) confirmPick();return;}
+  var i=+t.dataset.i; if(G.used[pi][i]) return;
+  G.sel=(G.sel===i)?null:i; renderZone(pi);
+}
+function confirmPick(){
+  var pi=G.turn; G.picks[pi]=G.sel; G.sel=null;
+  if(pi===G.first){G.turn=1-pi;renderAll();}
+  else{G.phase='battle';G.turn=-1;renderAll();runBattle();}
+}
+
+/* ---------- Combat automatique ---------- */
+async function runBattle(){
+  var token=G.token, A=monOf(0), B=monOf(1), M=[A,B];
+  G.hp=[A.hp,B.hp];
+  setLog(esc(A.name)+' contre '+esc(B.name),'Combat automatique · touche l\'arène pour accélérer');
+  await sleep(1000); if(G.token!==token) return;
+  var order=(A.st.spe===B.st.spe)?(Math.random()<.5?[0,1]:[1,0]):(A.st.spe>B.st.spe?[0,1]:[1,0]);
+  var turn=0;
+  while(G.hp[0]>0&&G.hp[1]>0&&turn<60){
+    var att=order[turn%2], def=1-att, a=M[att], d=M[def];
+    var mv=a.moves[Math.floor(Math.random()*a.moves.length)]; /* capacité tirée au hasard parmi les siennes */
+    var mult=1, notes=[];
+    if(d.types.indexOf(a.force)>-1){mult*=1.5;notes.push('▲ Force ×1,5');}
+    if(mv.t===d.weak){mult*=1.5;notes.push('▼ Faiblesse ×1,5');}
+    if(mv.t===d.res){mult*=2/3;notes.push('◆ Résistance ×0,67');}
+    /* Formule officielle simplifiée : niveau 50, puissance de la capacité, stat offensive contre la défense correspondante */
+    var phys=(mv.c==='P'), AT=phys?a.st.atk:a.st.spa, DF=phys?d.st.def:d.st.spd;
+    var dmg=Math.max(1,Math.round(((2*LV/5+2)*mv.p*AT/DF/50+2)*mult*(0.85+Math.random()*0.15)));
+    anim($('#img'+att),'lunge');
+    await sleep(260); if(G.token!==token) return;
+    G.hp[def]=Math.max(0,G.hp[def]-dmg);
+    anim($('#img'+def),'hit');
+    var pct=Math.round(G.hp[def]/d.hp*100), bar=$('#bar'+def);
+    bar.style.width=pct+'%'; bar.style.background=pct>50?'var(--good)':(pct>20?'var(--warn)':'var(--bad)');
+    $('#hpt'+def).textContent='PV '+G.hp[def]+'/'+d.hp;
+    setLog(esc(a.name)+' utilise '+esc(mv.n)+' : −'+dmg, T[mv.t][0]+' · '+(phys?'Physique':'Spécial')+(notes.length?' · '+notes.join(' · '):''));
+    await sleep(900); if(G.token!==token) return;
+    turn++;
+  }
+  var w;
+  if(G.hp[0]<=0) w=1; else if(G.hp[1]<=0) w=0; else w=(G.hp[0]/A.hp>=G.hp[1]/B.hp)?0:1;
+  var l=1-w;
+  var loser=$('#img'+l); if(loser) loser.classList.add('ko');
+  G.score[w]++;
+  if(!G.tb){G.used[0][G.picks[0]]=(w===0?'W':'L'); G.used[1][G.picks[1]]=(w===1?'W':'L');}
+  G.roundRes[G.round]=w;
+  renderZone(0);renderZone(1);renderRounds();
+  setLog('Manche pour le Joueur '+(w+1),esc(M[w].name)+' bat '+esc(M[l].name));
+  await sleep(1900); if(G.token!==token) return;
+  if(G.tb){endGame();return;}
+  G.round++;
+  if(G.round>=6){
+    if(G.score[0]===G.score[1]){startTieBreak();return;}
+    endGame();return;
+  }
+  G.phase='pick'; G.first=G.round%2; G.turn=G.first; G.picks=[null,null]; G.sel=null; G.hp=null;
+  renderAll();
+}
+
+/* Égalité après 6 manches : tirage animé d'un Pokémon par joueur, puis manche décisive */
+function spinHTML(pi){
+  return '<div class="fslot spin" id="img'+pi+'">'+img(HERO[0],false)+'</div>'+
+    '<div class="finfo"><div class="fname dim">Tirage…</div></div>';
+}
+async function startTieBreak(){
+  var token=G.token;
+  G.phase='tiebreak'; G.round=6; G.turn=-1; G.picks=[null,null]; G.hp=null; G.sel=null; G.fast=false;
+  renderZone(0);renderZone(1);renderRounds();
+  setLog('Égalité '+G.score[0]+'–'+G.score[1]+' !','Manche décisive : un Pokémon tiré au sort pour chacun');
+  var taken={}; G.hands.forEach(function(h){h.forEach(function(m){taken[m.id]=1;});});
+  var ids=randomIds(2,taken), spinIds=randomIds(24,{});
+  var recP=Promise.all(ids.map(getMon)).catch(function(){return null;});
+  $('#f0').innerHTML=spinHTML(0); $('#f1').innerHTML=spinHTML(1);
+  await preload(spinIds.map(function(id){return spriteURL(id,false);}),1200); if(!G||G.token!==token) return;
+  for(var i=0;i<24;i++){
+    for(var pi=0;pi<2;pi++){
+      var el=document.querySelector('#img'+pi+' img');
+      if(el) setSpr(el,FB(spinIds[(i+pi*7)%24]),Math.random()<0.15);
+    }
+    beep(300+(i%6)*40,0.04,'square',0.025);
+    await sleep(60+i*9); if(!G||G.token!==token) return;
+  }
+  var recs=await recP; if(!G||G.token!==token) return;
+  if(!recs){ /* hors connexion : on pioche parmi les fiches déjà en cache */
+    var c=shuffle(Object.keys(MONC).map(Number).filter(function(id){return !taken[id];}));
+    if(c.length<2) c=shuffle(Object.keys(taken).map(Number));
+    recs=[MONC[c[0]],MONC[c[1]]];
+  }
+  var fin=recs.map(makeMon);
+  G.tb=fin; G.picks=[0,0];
+  fin.forEach(function(m){
+    if(!DEX.seen[m.id]){DEX.seen[m.id]=1;G.fresh++;}
+    if(m.shiny) DEX.shiny[m.id]=1;
+  });
+  save();
+  renderFighters(); anim($('#img0'),'pop'); anim($('#img1'),'pop');
+  fin.forEach(function(m,pi){if(m.shiny) jackpot(pi,m);});
+  beep(660,0.12,'square',0.05); beep(880,0.18,'square',0.05,0.12);
+  setLog(esc(fin[0].name)+' contre '+esc(fin[1].name)+((fin[0].shiny||fin[1].shiny)?' ✦':''),'Manche décisive · combat automatique');
+  await sleep((fin[0].shiny||fin[1].shiny)?2600:1600); if(!G||G.token!==token) return;
+  G.phase='battle'; runBattle();
+}
+
+function endGame(){
+  G.phase='over'; G.turn=-1;
+  var a=G.score[0], b=G.score[1], win=a>b?0:(b>a?1:-1);
+  if(win<0) DEX.ties=(DEX.ties||0)+1; else DEX.wins[win]++;
+  save(); renderRounds();
+  var msg=win<0?'ÉGALITÉ !':'JOUEUR '+(win+1)+' GAGNE !';
+  var col=win===0?'var(--p1)':(win===1?'var(--p2)':'var(--ink)');
+  var half='<h2 style="color:'+col+'">'+msg+'</h2><div class="big">'+a+' – '+b+'</div>'+
+    (G.tb?'<div class="sub">Décidé à la manche décisive</div>':'')+
+    '<div class="sub">Pokédex '+(G.fresh>0?'+'+G.fresh+' nouveau'+(G.fresh>1?'x':'')+' · ':'')+count(DEX.seen)+'/'+N+'</div>';
+  var w=document.createElement('div'); w.id='endwrap';
+  w.innerHTML='<div class="endhalf rot">'+half+'</div>'+
+    '<div class="endbtns"><button class="btn" id="eAgain">Rejouer</button><button class="btn alt" id="eDex">Pokédex</button><button class="btn alt" id="eMenu">Menu</button></div>'+
+    '<div class="endhalf">'+half+'</div>';
+  $('#app').appendChild(w);
+  $('#eAgain').onclick=function(){w.remove();startGame();};
+  $('#eDex').onclick=function(){w.remove();show('dex');};
+  $('#eMenu').onclick=function(){w.remove();show('menu');};
+}
+
+/* ---------- Pokédex ---------- */
+function renderDex(){
+  var seen=count(DEX.seen), sh=count(DEX.shiny), h='', id;
+  $('#dcount').textContent=seen+'/'+N+' · ✦ '+sh;
+  $('#dbar').style.width=Math.round(seen/N*100)+'%';
+  for(id=1;id<=N;id++){
+    var s=DEX.seen[id], nm=s?(NAMEC[id]||('#'+id)):'???';
+    h+='<button class="dcell'+(s?'':' unseen')+'" data-id="'+id+'">'+(DEX.shiny[id]?'<span class="star">✦</span>':'')+
+      '<img alt="" loading="lazy" src="'+spriteURL(id,false)+'" onerror="__fb(this,'+id+',false)">'+
+      '<span class="no">#'+('000'+id).slice(-4)+'</span><span class="nm">'+esc(nm)+'</span></button>';
+  }
+  $('#dexgrid').innerHTML=h;
+  fillDexNames();
+}
+function fillDexNames(){
+  var miss=Object.keys(DEX.seen).map(Number).filter(function(id){return !NAMEC[id];});
+  pool(miss.map(function(id){return function(){
+    return getName(id).then(function(n){
+      var c=document.querySelector('.dcell[data-id="'+id+'"] .nm'); if(c) c.textContent=n;
+    }).catch(function(){});
+  };}),4).catch(function(){});
+}
+function renderDetail(rec){
+  var m=Object.assign({},rec,derive(rec.id,rec.types));
+  m.st=calc(m.base,[31,31,31,31,31,31]);
+  var hasSh=!!DEX.shiny[m.id];
+  showModal('<div class="sheet" id="sheet"><h3>#'+m.id+' '+esc(m.name)+'</h3>'+
+    '<div class="pair"><figure>'+img(m,false)+'Normal</figure>'+
+    '<figure class="'+(hasSh?'':'lock')+'">'+img(m,true)+(hasSh?'Chromatique ✦':'Chromatique ???')+'</figure></div>'+
+    '<div class="types">'+m.types.map(chipFull).join('')+'</div>'+
+    '<div class="fwr"><div>'+chip(m.force,'▲ ')+'<span>Force : fort contre '+T[m.force][0]+'</span></div>'+
+    '<div>'+chip(m.weak,'▼ ')+'<span>Faiblesse : '+T[m.weak][0]+'</span></div>'+
+    '<div>'+chip(m.res,'◆ ')+'<span>Résistance : '+T[m.res][0]+'</span></div></div>'+
+    '<div class="srows">'+['PV','Attaque','Défense','Atq. Spé.','Déf. Spé.','Vitesse'].map(function(lab,i){
+      var lo=calc(m.base,[0,0,0,0,0,0])[SKEYS[i]], hi=m.st[SKEYS[i]];
+      return '<div class="srow"><span>'+lab+'</span><b>'+m.base[i]+'</b><span class="bw"><i style="width:'+Math.min(100,Math.round(m.base[i]/160*100))+'%"></i></span><span class="lv">'+lo+'–'+hi+'</span></div>';
+    }).join('')+'<div class="sleg">Base · Niv.'+LV+' selon IV (0 à 31)</div></div>'+
+    '<div class="sleg" style="text-align:left">Capacités offensives (une tirée au hasard par attaque)</div>'+
+    '<div class="moves">'+m.moves.map(function(v){
+      var hh=hex2hsl(T[v.t][2]);
+      return '<i class="chip" style="background:'+T[v.t][2]+';color:'+(hh[2]>58?'#1c1530':'#fff')+'">'+esc(v.n)+' '+v.p+'</i>';
+    }).join('')+'</div>'+
+    '<button class="btn alt" id="mClose">Fermer</button></div>');
+  $('#mClose').onclick=closeModal;
+}
+function dexDetail(id){
+  if(!DEX.seen[id]) return;
+  showModal('<div class="sheet" id="lsheet"><h3>#'+id+'</h3><div class="sub">Chargement…</div></div>');
+  getMon(id).then(function(rec){
+    if($('#modal').hidden) return;
+    renderDetail(rec);
+  },function(){
+    showModal('<div class="sheet" id="sheet"><h3>Hors connexion</h3><div class="sub">Impossible de charger cette fiche pour le moment.</div><button class="btn alt" id="mClose">Fermer</button></div>');
+    $('#mClose').onclick=closeModal;
+  });
+}
+
+/* ---------- Événements ---------- */
+$('#bPlay').onclick=startGame;
+$('#bDex').onclick=function(){show('dex');};
+$('#bBack').onclick=function(){show('menu');};
+$('#bSnd').onclick=function(){SOUND=SOUND?0:1;lsSet('duel-de-poche-sound',SOUND);unlockAudio();renderMenu();if(SOUND)beep(660,0.1,'square',0.05);};
+$('#z0').addEventListener('click',onZone);
+$('#z1').addEventListener('click',onZone);
+$('#arena').addEventListener('click',function(e){
+  if(e.target.id==='bQuit'||!G) return;
+  if(G.phase==='battle') G.fast=true;
+});
+$('#bQuit').onclick=function(){
+  if(!G) return;
+  var b=$('#bQuit');
+  if(G.quitArm){G.token={};show('menu');b.textContent='Menu';return;}
+  G.quitArm=true;b.textContent='Quitter ?';
+  setTimeout(function(){if(G){G.quitArm=false;}b.textContent='Menu';},2200);
+};
+$('#dexgrid').addEventListener('click',function(e){
+  var c=e.target.closest('.dcell'); if(c) dexDetail(+c.dataset.id);
+});
+$('#modal').addEventListener('click',function(e){if(e.target.id==='modal'&&$('#sheet'))closeModal();});
+
+renderMenu();
+})();
+
+</script>
+</body>
+</html>
